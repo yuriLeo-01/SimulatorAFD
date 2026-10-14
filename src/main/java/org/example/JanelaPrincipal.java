@@ -1,3 +1,8 @@
+package org.example;
+import org.example.Automato;
+import org.example.AutomatoInvalidoException;
+import org.example.Simulador;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
