@@ -1,3 +1,5 @@
+import org.example.JanelaPrincipal;
+
 import javax.swing.SwingUtilities;
 
 public class Main {
