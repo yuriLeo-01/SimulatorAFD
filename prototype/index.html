@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoFlow Studio | Simulador Premium de Autômatos Finitos (AFD)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+              950: '#2e1065',
+            },
+            surface: {
+              900: '#0f172a',
+              850: '#131e36',
+              800: '#1e293b',
+              750: '#26344d',
+              700: '#334155',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    .glow-active {
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.6), 0 0 50px rgba(124, 58, 237, 0.3);
+    }
+    .pulse-node {
+      animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0.2; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+  </style>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col overflow-hidden">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="h-14 border-b border-slate-800/80 bg-surface-900/90 backdrop-blur-md flex items-center justify-between px-5 z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 via-indigo-500 to-purple-400 flex items-center justify-center shadow-lg shadow-violet-500/25">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3" stroke-width="2.5"></circle>
+          <circle cx="12" cy="12" r="8" stroke-width="2" stroke-dasharray="3 3"></circle>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2M2 12h2m16 0h2"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-base tracking-tight text-white">AutoFlow<span class="text-violet-400 font-medium">Studio</span></span>
+          <span class="text-[10px] font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">v2.0 PRO</span>
+        </div>
+        <p class="text-[10px] text-slate-400 -mt-0.5">Simulador de Autômatos Finitos Determinísticos</p>
+      </div>
+    </div>
+
+    <!-- PRESETS & TOOLS -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center bg-surface-800 border border-slate-700/60 rounded-lg p-1 text-xs">
+        <span class="text-slate-400 px-2 font-medium">Exemplos:</span>
+        <select id="presetSelector" class="bg-surface-850 text-slate-200 border-none outline-none rounded py-1 px-2.5 text-xs font-medium cursor-pointer hover:bg-slate-700 transition">
+          <option value="ends01">Termina em '01' (Exemplo Original)</option>
+          <option value="evenZeros">Número par de 0's</option>
+          <option value="mod3">Binário Divisível por 3</option>
+          <option value="patternAbb">Contém padrão 'abb'</option>
+        </select>
+      </div>
+
+      <button id="btnOpenBatchModal" class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs font-medium transition">
+        <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+        Bateria de Testes
+      </button>
+
+      <button id="btnExportSVG" class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs font-medium transition" title="Exportar grafo em vetor SVG">
+        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Exportar SVG / Figma
+      </button>
+
+      <a href="https://www.figma.com" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-lg text-xs font-semibold shadow-md shadow-violet-600/30 transition">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 38 57" fill="none">
+          <path d="M19 28.5C19 23.2533 23.2533 19 28.5 19C33.7467 19 38 23.2533 38 28.5C38 33.7467 33.7467 38 28.5 38C23.2533 38 19 33.7467 19 28.5Z" fill="white"/>
+          <path d="M0 47.5C0 42.2533 4.25329 38 9.5 38H19V47.5C19 52.7467 14.7467 57 9.5 57C4.25329 57 0 52.7467 0 47.5Z" fill="white"/>
+          <path d="M19 0V19H28.5C33.7467 19 38 14.7467 38 9.5C38 4.25329 33.7467 0 28.5 0H19Z" fill="white"/>
+          <path d="M0 9.5C0 14.7467 4.25329 19 9.5 19H19V0H9.5C4.25329 0 0 4.25329 0 9.5Z" fill="white"/>
+          <path d="M0 28.5C0 33.7467 4.25329 38 9.5 38H19V19H9.5C4.25329 19 0 23.2533 0 28.5Z" fill="white"/>
+        </svg>
+        Figma Specs
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN APPLICATION LAYOUT -->
+  <main class="flex-1 flex overflow-hidden">
+
+    <!-- LEFT SIDEBAR: CONFIGURATION & SPECIFICATION -->
+    <aside class="w-[360px] border-r border-slate-800/80 bg-surface-900 flex flex-col flex-shrink-0 z-10 custom-scroll overflow-y-auto">
+      
+      <!-- TUPLE SUMMARY BANNER -->
+      <div class="p-4 border-b border-slate-800 bg-surface-850/40">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Definição Formal</span>
+          <span id="badgeDeterminismo" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">AFD VÁLIDO</span>
+        </div>
+        <div class="font-mono text-xs bg-surface-900/80 p-2.5 rounded-lg border border-slate-800 text-violet-300 flex items-center justify-center">
+          M = (Q, &Sigma;, &delta;, q&#8320;, F)
+        </div>
+      </div>
+
+      <!-- FORM FIELDS -->
+      <div class="p-4 space-y-4 flex-1">
+        
+        <!-- Alfabeto -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+            <span>&Sigma; - Alfabeto</span>
+            <span class="text-[10px] text-slate-500">separado por espaço</span>
+          </label>
+          <input type="text" id="inputAlfabeto" value="0 1" class="w-full bg-surface-800 text-slate-100 text-sm font-mono px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
+        </div>
+
+        <!-- Estados -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+            <span>Q - Conjunto de Estados</span>
+            <span class="text-[10px] text-slate-500">separado por espaço</span>
+          </label>
+          <input type="text" id="inputEstados" value="q0 q1 q2" class="w-full bg-surface-800 text-slate-100 text-sm font-mono px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
+        </div>
+
+        <!-- Estado Inicial & Finais -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">q&#8320; - Inicial</label>
+            <input type="text" id="inputInicial" value="q0" class="w-full bg-surface-800 text-slate-100 text-sm font-mono px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">F - Finais (Aceitação)</label>
+            <input type="text" id="inputFinais" value="q2" class="w-full bg-surface-800 text-slate-100 text-sm font-mono px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
+          </div>
+        </div>
+
+        <!-- Transições -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold text-slate-300">&delta; - Função de Transição</label>
+            <span class="text-[10px] text-slate-500">origem &nbsp; símbolo &nbsp; destino</span>
+          </div>
+          <textarea id="inputTransicoes" rows="7" class="w-full bg-surface-800 text-slate-100 text-xs font-mono p-3 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition leading-relaxed custom-scroll">q0 0 q1
+q0 1 q0
+q1 0 q1
+q1 1 q2
+q2 0 q1
+q2 1 q0</textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-2 pt-1">
+          <button id="btnAtualizarGrafo" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-2.5 px-3 rounded-lg text-xs shadow-md shadow-violet-600/30 transition flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Recompilar AFD
+          </button>
+          
+          <label class="bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer transition flex items-center justify-center gap-1" title="Carregar arquivo .txt no formato padrão">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <input type="file" id="fileUploader" accept=".txt" class="hidden">
+            .txt
+          </label>
+        </div>
+
+        <!-- Transições em Tabela -->
+        <div class="pt-2">
+          <button id="btnToggleTable" class="w-full flex items-center justify-between text-xs font-semibold text-slate-400 hover:text-slate-200 py-1 border-t border-slate-800">
+            <span>Matriz de Transição (&delta;)</span>
+            <span id="tableToggleIcon">&plus;</span>
+          </button>
+          <div id="tableContainer" class="hidden mt-2 overflow-x-auto border border-slate-800 rounded-lg">
+            <table id="matrixTable" class="w-full text-xs text-left text-slate-300 font-mono">
+              <!-- Dynamically populated -->
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER STATUS -->
+      <div class="p-3 border-t border-slate-800 bg-surface-850/30 text-[11px] text-slate-400 flex items-center justify-between">
+        <span id="statesCountInfo">3 estados, 2 símbolos</span>
+        <span class="text-violet-400 flex items-center gap-1 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Pronto
+        </span>
+      </div>
+
+    </aside>
+
+    <!-- CENTER AREA: INTERACTIVE CANVAS + SIMULATOR CONTROLS -->
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+
+      <!-- CANVAS TOOLBAR OVERLAY -->
+      <div class="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-surface-900/80 backdrop-blur-md p-1.5 rounded-xl border border-slate-800/80 shadow-xl">
+        <button id="btnResetView" class="p-2 hover:bg-surface-800 text-slate-300 rounded-lg text-xs transition" title="Centralizar visualização">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+        </button>
+        <button id="btnZoomIn" class="p-2 hover:bg-surface-800 text-slate-300 rounded-lg text-xs transition" title="Aumentar zoom">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+        </button>
+        <button id="btnZoomOut" class="p-2 hover:bg-surface-800 text-slate-300 rounded-lg text-xs transition" title="Diminuir zoom">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path></svg>
+        </button>
+        <div class="w-px h-4 bg-slate-700 mx-1"></div>
+        <span class="text-[10px] font-mono text-slate-400 px-1.5" id="zoomLevel">100%</span>
+      </div>
+
+      <!-- GRAPH INTERACTIVE CANVAS -->
+      <div class="flex-1 relative bg-[#090d16] overflow-hidden cursor-grab active:cursor-grabbing" id="canvasContainer">
+        <!-- Background Grid Pattern -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#475569" stroke-width="0.8"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+
+        <canvas id="graphCanvas" class="w-full h-full block"></canvas>
+
+        <!-- Tooltip overlay for node info -->
+        <div id="nodeTooltip" class="hidden absolute pointer-events-none bg-surface-900/95 border border-slate-700 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg shadow-2xl backdrop-blur-md"></div>
+      </div>
+
+      <!-- BOTTOM PANEL: STEP-BY-STEP SIMULATION & TAPE RUNNER -->
+      <div class="border-t border-slate-800/80 bg-surface-900/95 backdrop-blur-md p-4 flex flex-col gap-3.5 z-10 shadow-2xl">
+        
+        <!-- ROW 1: TAPE VISUALIZATION & CURRENT STATUS -->
+        <div class="flex items-center justify-between gap-4">
+          
+          <!-- Input String Field -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-slate-300 uppercase tracking-wide">Cadeia (w):</span>
+            <div class="relative">
+              <input type="text" id="inputCadeia" value="0101" placeholder="ex: 0101" class="w-48 bg-surface-800 text-slate-100 text-sm font-mono px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
+              <button id="btnClearCadeia" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs font-bold" title="Limpar">&times;</button>
+            </div>
+            <button id="btnLoadString" class="px-3 py-1.5 bg-surface-750 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-600/50 transition">
+              Carregar Fita
+            </button>
+          </div>
+
+          <!-- Simulation Tape View -->
+          <div class="flex-1 flex items-center justify-center overflow-x-auto custom-scroll py-1 px-4">
+            <div class="flex items-center gap-1.5" id="tapeCells">
+              <!-- Dynamically populated cells -->
+            </div>
+          </div>
+
+          <!-- Verdict Badge -->
+          <div id="statusBadge" class="px-4 py-2 rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 border bg-surface-800 text-slate-400 border-slate-700">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+            <span>Aguardando Execução</span>
+          </div>
+
+        </div>
+
+        <!-- ROW 2: PLAYBACK CONTROLS & STEP LOG -->
+        <div class="flex items-center justify-between pt-1 border-t border-slate-800/60">
+          
+          <!-- Playback Buttons -->
+          <div class="flex items-center gap-1.5">
+            <button id="btnResetSim" class="p-2 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs transition" title="Reiniciar do Início">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"></path></svg>
+            </button>
+            <button id="btnStepBack" class="p-2 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs transition" title="Passo Anterior">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button id="btnPlayPause" class="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md shadow-violet-600/30 transition">
+              <svg id="iconPlay" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+              <span id="labelPlay">Executar (Play)</span>
+            </button>
+            <button id="btnStepForward" class="p-2 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs transition" title="Próximo Passo">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+            <button id="btnRunInstant" class="p-2 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs transition" title="Resultado Instantâneo">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </button>
+          </div>
+
+          <!-- Speed Slider -->
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span>Velocidade:</span>
+            <input type="range" id="speedSlider" min="200" max="1500" step="100" value="700" class="w-24 accent-violet-500 cursor-pointer">
+            <span id="speedLabel" class="font-mono text-[11px] text-slate-300 w-10">0.7s</span>
+          </div>
+
+          <!-- Current Step Diagnostic Text -->
+          <div class="text-xs font-mono text-slate-300 flex items-center gap-3">
+            <div id="stepInfoText" class="text-slate-400">Passo: <span class="text-violet-400 font-bold">0 / 0</span></div>
+            <div class="h-3 w-px bg-slate-700"></div>
+            <div id="activeStateText" class="text-slate-300">Estado Atual: <span class="text-emerald-400 font-bold">q0</span></div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- BATCH TESTING MODAL -->
+  <div id="batchModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-surface-900 border border-slate-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-violet-600/20 text-violet-400 flex items-center justify-center font-bold text-sm">✓</div>
+          <h3 class="text-base font-bold text-white">Bateria de Testes em Lote</h3>
+        </div>
+        <button id="btnCloseBatchModal" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto custom-scroll space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Cadeias de Entrada (uma por linha):</label>
+          <textarea id="batchInputStrings" rows="5" class="w-full bg-surface-800 text-slate-100 text-sm font-mono p-3 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 custom-scroll">01
+001
+110
+0101
+111
+0
+1
+0001</textarea>
+        </div>
+
+        <button id="btnRunBatch" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold py-2.5 rounded-lg text-xs shadow-md transition">
+          Executar Todos os Testes
+        </button>
+
+        <div class="border border-slate-800 rounded-lg overflow-hidden">
+          <table class="w-full text-xs text-left font-mono">
+            <thead class="bg-surface-800 text-slate-400 uppercase text-[10px]">
+              <tr>
+                <th class="px-4 py-2">#</th>
+                <th class="px-4 py-2">Cadeia (w)</th>
+                <th class="px-4 py-2">Resultado</th>
+                <th class="px-4 py-2">Caminho Percorrido</th>
+              </tr>
+            </thead>
+            <tbody id="batchResultsTable" class="divide-y divide-slate-800/80 text-slate-200">
+              <!-- Filled on test -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    // --- DFA DATA STRUCTURE & CORE LOGIC ---
+    class DFA {
+      constructor() {
+        this.alphabet = new Set();
+        this.states = new Set();
+        this.initialState = null;
+        this.finalStates = new Set();
+        this.transitions = new Map(); // key: "state:symbol" -> "targetState"
+      }
+
+      setAlphabet(symbols) {
+        this.alphabet = new Set(symbols.filter(s => s.trim().length > 0));
+      }
+
+      setStates(statesList) {
+        this.states = new Set(statesList.filter(s => s.trim().length > 0));
+      }
+
+      setInitial(state) {
+        this.initialState = state.trim();
+      }
+
+      setFinals(finalsList) {
+        this.finalStates = new Set(finalsList.filter(s => s.trim().length > 0));
+      }
+
+      addTransition(from, symbol, to) {
+        this.transitions.set(`${from.trim()}:${symbol.trim()}`, to.trim());
+      }
+
+      getNextState(state, symbol) {
+        return this.transitions.get(`${state}:${symbol}`) || null;
+      }
+
+      simulate(inputStr) {
+        const trace = [];
+        let curr = this.initialState;
+        
+        trace.push({
+          step: 0,
+          state: curr,
+          symbolRead: null,
+          remaining: inputStr,
+          status: 'RUNNING',
+          isFinal: this.finalStates.has(curr)
+        });
+
+        if (!curr) {
+          return { accepted: false, trace, reason: 'Estado inicial não definido' };
+        }
+
+        for (let i = 0; i < inputStr.length; i++) {
+          const char = inputStr[i];
+          if (!this.alphabet.has(char)) {
+            trace.push({
+              step: i + 1,
+              state: curr,
+              symbolRead: char,
+              remaining: inputStr.slice(i + 1),
+              status: 'REJECTED_ALPHABET',
+              reason: `Símbolo '${char}' não pertence ao alfabeto &Sigma;`
+            });
+            return { accepted: false, trace, reason: `Símbolo '${char}' fora do alfabeto` };
+          }
+
+          const next = this.getNextState(curr, char);
+          if (!next) {
+            trace.push({
+              step: i + 1,
+              state: curr,
+              symbolRead: char,
+              remaining: inputStr.slice(i + 1),
+              status: 'REJECTED_TRAP',
+              reason: `Nenhuma transição definida para (&delta;(${curr}, ${char}))`
+            });
+            return { accepted: false, trace, reason: `Sem transição para '${char}' em ${curr}` };
+          }
+
+          curr = next;
+          trace.push({
+            step: i + 1,
+            state: curr,
+            symbolRead: char,
+            remaining: inputStr.slice(i + 1),
+            status: 'RUNNING',
+            isFinal: this.finalStates.has(curr)
+          });
+        }
+
+        const isAccepted = this.finalStates.has(curr);
+        trace[trace.length - 1].status = isAccepted ? 'ACCEPTED' : 'REJECTED';
+        return {
+          accepted: isAccepted,
+          trace,
+          finalState: curr,
+          reason: isAccepted ? `Terminou no estado de aceitação [${curr}]` : `Terminou no estado não-final [${curr}]`
+        };
+      }
+    }
+
+    // --- APPLICATION STATE ---
+    let dfa = new DFA();
+    let currentTrace = [];
+    let currentStepIndex = 0;
+    let isPlaying = false;
+    let playInterval = null;
+
+    // Canvas view & node positions
+    const nodePositions = {};
+    let panX = 0;
+    let panY = 0;
+    let zoom = 1.0;
+    let draggedNode = null;
+    let isPanning = false;
+    let startMouseX = 0;
+    let startMouseY = 0;
+
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvasContainer');
+
+    // Preset configurations
+    const PRESETS = {
+      ends01: {
+        alphabet: "0 1",
+        states: "q0 q1 q2",
+        initial: "q0",
+        finals: "q2",
+        transitions: "q0 0 q1\nq0 1 q0\nq1 0 q1\nq1 1 q2\nq2 0 q1\nq2 1 q0",
+        sampleString: "0101"
+      },
+      evenZeros: {
+        alphabet: "0 1",
+        states: "qPar qImpar",
+        initial: "qPar",
+        finals: "qPar",
+        transitions: "qPar 0 qImpar\nqPar 1 qPar\nqImpar 0 qPar\nqImpar 1 qImpar",
+        sampleString: "10101"
+      },
+      mod3: {
+        alphabet: "0 1",
+        states: "q0 q1 q2",
+        initial: "q0",
+        finals: "q0",
+        transitions: "q0 0 q0\nq0 1 q1\nq1 0 q2\nq1 1 q0\nq2 0 q1\nq2 1 q2",
+        sampleString: "110"
+      },
+      patternAbb: {
+        alphabet: "a b",
+        states: "q0 q1 q2 q3",
+        initial: "q0",
+        finals: "q3",
+        transitions: "q0 a q1\nq0 b q0\nq1 a q1\nq1 b q2\nq2 a q1\nq2 b q3\nq3 a q3\nq3 b q3",
+        sampleString: "ababb"
+      }
+    };
+
+    // --- INITIALIZATION ---
+    function init() {
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      setupCanvasInteractions();
+      loadPreset('ends01');
+      setupControls();
+    }
+
+    function resizeCanvas() {
+      canvas.width = container.clientWidth * window.devicePixelRatio;
+      canvas.height = container.clientHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      drawGraph();
+    }
+
+    function loadPreset(key) {
+      const p = PRESETS[key];
+      if (!p) return;
+      document.getElementById('inputAlfabeto').value = p.alphabet;
+      document.getElementById('inputEstados').value = p.states;
+      document.getElementById('inputInicial').value = p.initial;
+      document.getElementById('inputFinais').value = p.finals;
+      document.getElementById('inputTransicoes').value = p.transitions;
+      document.getElementById('inputCadeia').value = p.sampleString;
+      compileDFA();
+      autoLayoutNodes();
+      loadStringAndPrepareTape();
+    }
+
+    function compileDFA() {
+      const alphabetStr = document.getElementById('inputAlfabeto').value.trim();
+      const statesStr = document.getElementById('inputEstados').value.trim();
+      const initialStr = document.getElementById('inputInicial').value.trim();
+      const finalsStr = document.getElementById('inputFinais').value.trim();
+      const transStr = document.getElementById('inputTransicoes').value.trim();
+
+      dfa = new DFA();
+      dfa.setAlphabet(alphabetStr.split(/\s+/));
+      dfa.setStates(statesStr.split(/\s+/));
+      dfa.setInitial(initialStr);
+      dfa.setFinals(finalsStr.split(/\s+/));
+
+      const lines = transStr.split('\n');
+      for (const line of lines) {
+        const parts = line.trim().split(/\s+/);
+        if (parts.length === 3) {
+          dfa.addTransition(parts[0], parts[1], parts[2]);
+        }
+      }
+
+      document.getElementById('statesCountInfo').textContent = `${dfa.states.size} estados, ${dfa.alphabet.size} símbolos`;
+      updateTransitionMatrix();
+      drawGraph();
+    }
+
+    function autoLayoutNodes() {
+      const states = Array.from(dfa.states);
+      const total = states.length;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      panX = width / 2;
+      panY = height / 2;
+      zoom = 1.0;
+
+      const radius = Math.min(width, height) * 0.28;
+      states.forEach((state, idx) => {
+        const angle = (idx / total) * 2 * Math.PI - Math.PI / 2;
+        nodePositions[state] = {
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius
+        };
+      });
+      drawGraph();
+    }
+
+    function updateTransitionMatrix() {
+      const states = Array.from(dfa.states);
+      const symbols = Array.from(dfa.alphabet);
+      const table = document.getElementById('matrixTable');
+
+      let html = `<thead class="bg-surface-800 text-slate-400"><tr><th class="p-2 border-b border-slate-700">&delta;</th>`;
+      symbols.forEach(sym => {
+        html += `<th class="p-2 border-b border-slate-700 text-center font-bold text-violet-400">${sym}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      states.forEach(st => {
+        const isInit = st === dfa.initialState ? '-> ' : '';
+        const isFinal = dfa.finalStates.has(st) ? ' *' : '';
+        html += `<tr class="border-b border-slate-800/60 hover:bg-surface-850"><td class="p-2 font-semibold text-slate-300">${isInit}${st}${isFinal}</td>`;
+        symbols.forEach(sym => {
+          const dest = dfa.getNextState(st, sym) || '<span class="text-slate-600">-</span>';
+          html += `<td class="p-2 text-center text-slate-200">${dest}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody>`;
+      table.innerHTML = html;
+    }
+
+    // --- CANVAS GRAPH RENDERING ---
+    function drawGraph() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.translate(panX, panY);
+      ctx.scale(zoom, zoom);
+
+      // Active state from simulation
+      const currentActiveState = (currentTrace.length > 0 && currentStepIndex < currentTrace.length)
+        ? currentTrace[currentStepIndex].state
+        : null;
+
+      // Group transitions between same pair to combine symbols (e.g. 0, 1)
+      const edgeMap = new Map();
+      dfa.transitions.forEach((dest, key) => {
+        const [orig, sym] = key.split(':');
+        const edgeKey = `${orig}->${dest}`;
+        if (!edgeMap.has(edgeKey)) {
+          edgeMap.set(edgeKey, { orig, dest, symbols: [] });
+        }
+        edgeMap.get(edgeKey).symbols.push(sym);
+      });
+
+      // 1. Draw Transitions (Edges)
+      edgeMap.forEach(edge => {
+        drawEdge(edge.orig, edge.dest, edge.symbols.join(', '));
+      });
+
+      // 2. Draw Initial State Arrow
+      if (dfa.initialState && nodePositions[dfa.initialState]) {
+        drawInitialIndicator(nodePositions[dfa.initialState]);
+      }
+
+      // 3. Draw States (Nodes)
+      dfa.states.forEach(state => {
+        const pos = nodePositions[state] || { x: 0, y: 0 };
+        const isInitial = state === dfa.initialState;
+        const isFinal = dfa.finalStates.has(state);
+        const isActive = state === currentActiveState;
+        drawNode(state, pos.x, pos.y, isInitial, isFinal, isActive);
+      });
+
+      ctx.restore();
+    }
+
+    function drawNode(name, x, y, isInitial, isFinal, isActive) {
+      const radius = 28;
+
+      // Active Pulsing Outer Glow
+      if (isActive) {
+        ctx.beginPath();
+        ctx.arc(x, y, radius + 12, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(139, 92, 246, 0.25)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(x, y, radius + 6, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(139, 92, 246, 0.45)';
+        ctx.fill();
+      }
+
+      // Main Node Body
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, 2 * Math.PI);
+      
+      if (isActive) {
+        const grad = ctx.createRadialGradient(x - 5, y - 5, 5, x, y, radius);
+        grad.addColorStop(0, '#8b5cf6');
+        grad.addColorStop(1, '#6d28d9');
+        ctx.fillStyle = grad;
+      } else {
+        const grad = ctx.createRadialGradient(x - 8, y - 8, 4, x, y, radius);
+        grad.addColorStop(0, '#1e293b');
+        grad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = grad;
+      }
+      ctx.fill();
+
+      // Border Stroke
+      ctx.lineWidth = isActive ? 3 : 2;
+      ctx.strokeStyle = isActive ? '#c4b5fd' : '#475569';
+      ctx.stroke();
+
+      // Double ring for Final / Acceptance States
+      if (isFinal) {
+        ctx.beginPath();
+        ctx.arc(x, y, radius - 5, 0, 2 * Math.PI);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = isActive ? '#ffffff' : '#94a3b8';
+        ctx.stroke();
+      }
+
+      // State Label
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '600 13px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(name, x, y);
+    }
+
+    function drawInitialIndicator(pos) {
+      const radius = 28;
+      const arrowStartX = pos.x - radius - 35;
+      const arrowStartY = pos.y;
+      const arrowEndX = pos.x - radius - 3;
+      const arrowEndY = pos.y;
+
+      ctx.beginPath();
+      ctx.moveTo(arrowStartX, arrowStartY);
+      ctx.lineTo(arrowEndX, arrowEndY);
+      ctx.strokeStyle = '#a78bfa';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Arrowhead
+      drawArrowHead(arrowEndX, arrowEndY, 0, '#a78bfa');
+
+      // "start" text
+      ctx.fillStyle = '#c4b5fd';
+      ctx.font = '600 10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('START', arrowStartX - 15, arrowStartY + 1);
+    }
+
+    function drawEdge(fromState, toState, label) {
+      const p1 = nodePositions[fromState];
+      const p2 = nodePositions[toState];
+      if (!p1 || !p2) return;
+
+      const nodeRadius = 28;
+
+      // Self Loop
+      if (fromState === toState) {
+        const loopRadius = 22;
+        const cx = p1.x;
+        const cy = p1.y - nodeRadius - loopRadius + 6;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, loopRadius, Math.PI * 0.25, Math.PI * 0.85, true);
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        // Arrowhead on loop
+        const arrowAngle = Math.PI * 0.85 - Math.PI / 2;
+        const ax = cx + loopRadius * Math.cos(Math.PI * 0.85);
+        const ay = cy + loopRadius * Math.sin(Math.PI * 0.85);
+        drawArrowHead(ax, ay, arrowAngle, '#64748b');
+
+        // Label
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '500 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, cx, cy - loopRadius - 5);
+        return;
+      }
+
+      // Directed transition between distinct states
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const dist = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx);
+
+      // Curved control point to avoid overlap with reverse transitions
+      const curvature = 26;
+      const midX = (p1.x + p2.x) / 2 - Math.sin(angle) * curvature;
+      const midY = (p1.y + p2.y) / 2 + Math.cos(angle) * curvature;
+
+      // Connect from node boundary to node boundary
+      const startX = p1.x + Math.cos(angle - 0.25) * nodeRadius;
+      const startY = p1.y + Math.sin(angle - 0.25) * nodeRadius;
+      const endX = p2.x - Math.cos(angle + 0.25) * nodeRadius;
+      const endY = p2.y - Math.sin(angle + 0.25) * nodeRadius;
+
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.quadraticCurveTo(midX, midY, endX, endY);
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      // Arrowhead
+      const targetAngle = Math.atan2(endY - midY, endX - midX);
+      drawArrowHead(endX, endY, targetAngle, '#64748b');
+
+      // Label with subtle badge
+      ctx.save();
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '600 11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      const labelX = (startX + 2 * midX + endX) / 4;
+      const labelY = (startY + 2 * midY + endY) / 4;
+
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(labelX - 10, labelY - 8, 20, 16, 4);
+      } else {
+        ctx.rect(labelX - 10, labelY - 8, 20, 16);
+      }
+      ctx.fillStyle = '#0f172a';
+      ctx.fill();
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText(label, labelX, labelY);
+      ctx.restore();
+    }
+
+    function drawArrowHead(x, y, angle, color) {
+      const headlen = 9;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-headlen, -headlen / 2.2);
+      ctx.lineTo(-headlen, headlen / 2.2);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // --- CANVAS USER INTERACTIONS (PAN & ZOOM & DRAG NODES) ---
+    function setupCanvasInteractions() {
+      container.addEventListener('mousedown', (e) => {
+        const rect = container.getBoundingClientRect();
+        const mx = (e.clientX - rect.left - panX) / zoom;
+        const my = (e.clientY - rect.top - panY) / zoom;
+
+        // Check if clicked on a node
+        for (const st of dfa.states) {
+          const pos = nodePositions[st];
+          if (pos && Math.hypot(mx - pos.x, my - pos.y) <= 30) {
+            draggedNode = st;
+            return;
+          }
+        }
+
+        // Otherwise pan the whole canvas
+        isPanning = true;
+        startMouseX = e.clientX - panX;
+        startMouseY = e.clientY - panY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (draggedNode) {
+          const rect = container.getBoundingClientRect();
+          nodePositions[draggedNode].x = (e.clientX - rect.left - panX) / zoom;
+          nodePositions[draggedNode].y = (e.clientY - rect.top - panY) / zoom;
+          drawGraph();
+          return;
+        }
+
+        if (isPanning) {
+          panX = e.clientX - startMouseX;
+          panY = e.clientY - startMouseY;
+          drawGraph();
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        draggedNode = null;
+        isPanning = false;
+      });
+
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+        zoom = Math.max(0.4, Math.min(2.5, zoom * zoomFactor));
+        document.getElementById('zoomLevel').textContent = `${Math.round(zoom * 100)}%`;
+        drawGraph();
+      });
+
+      document.getElementById('btnZoomIn').onclick = () => {
+        zoom = Math.min(2.5, zoom * 1.2);
+        document.getElementById('zoomLevel').textContent = `${Math.round(zoom * 100)}%`;
+        drawGraph();
+      };
+
+      document.getElementById('btnZoomOut').onclick = () => {
+        zoom = Math.max(0.4, zoom * 0.8);
+        document.getElementById('zoomLevel').textContent = `${Math.round(zoom * 100)}%`;
+        drawGraph();
+      };
+
+      document.getElementById('btnResetView').onclick = () => {
+        autoLayoutNodes();
+      };
+    }
+
+    // --- STEP-BY-STEP SIMULATION ENGINE ---
+    function loadStringAndPrepareTape() {
+      pausePlayback();
+      const inputStr = document.getElementById('inputCadeia').value.trim();
+      const res = dfa.simulate(inputStr);
+      currentTrace = res.trace;
+      currentStepIndex = 0;
+      renderTape(inputStr);
+      updateSimulationUI();
+      drawGraph();
+    }
+
+    function renderTape(inputStr) {
+      const tape = document.getElementById('tapeCells');
+      tape.innerHTML = '';
+
+      if (inputStr.length === 0) {
+        tape.innerHTML = `<div class="px-3 py-1.5 rounded-lg border border-slate-700 bg-surface-800 text-xs font-mono text-slate-400">&epsilon; (cadeia vazia)</div>`;
+        return;
+      }
+
+      for (let i = 0; i < inputStr.length; i++) {
+        const char = inputStr[i];
+        const cell = document.createElement('div');
+        cell.id = `tape-cell-${i}`;
+        cell.className = `w-9 h-9 rounded-lg font-mono font-bold text-sm flex items-center justify-center border transition-all duration-200 ${
+          i === 0 ? 'bg-violet-600/20 border-violet-500 text-violet-300 shadow-lg shadow-violet-500/20 scale-105' : 'bg-surface-800 border-slate-700 text-slate-400'
+        }`;
+        cell.textContent = char;
+        tape.appendChild(cell);
+      }
+    }
+
+    function updateSimulationUI() {
+      if (currentTrace.length === 0) return;
+
+      const current = currentTrace[currentStepIndex];
+      const totalSteps = currentTrace.length - 1;
+
+      // Update text stats
+      document.getElementById('stepInfoText').innerHTML = `Passo: <span class="text-violet-400 font-bold">${currentStepIndex} / ${totalSteps}</span>`;
+      document.getElementById('activeStateText').innerHTML = `Estado Atual: <span class="text-emerald-400 font-bold">${current.state || '-'}</span>`;
+
+      // Update Tape Head cursor
+      const inputStr = document.getElementById('inputCadeia').value.trim();
+      for (let i = 0; i < inputStr.length; i++) {
+        const cell = document.getElementById(`tape-cell-${i}`);
+        if (!cell) continue;
+
+        if (i < currentStepIndex) {
+          // Already read
+          cell.className = 'w-9 h-9 rounded-lg font-mono font-bold text-sm flex items-center justify-center border bg-surface-850/60 border-slate-800 text-slate-600 line-through';
+        } else if (i === currentStepIndex && currentStepIndex < totalSteps) {
+          // Currently reading
+          cell.className = 'w-9 h-9 rounded-lg font-mono font-bold text-sm flex items-center justify-center border bg-violet-600/30 border-violet-400 text-white shadow-lg shadow-violet-500/30 scale-110 ring-2 ring-violet-500/50';
+        } else {
+          // Pending
+          cell.className = 'w-9 h-9 rounded-lg font-mono font-bold text-sm flex items-center justify-center border bg-surface-800 border-slate-700 text-slate-300';
+        }
+      }
+
+      // Update Verdict Badge
+      const badge = document.getElementById('statusBadge');
+      if (currentStepIndex === totalSteps) {
+        const finalStatus = current.status;
+        if (finalStatus === 'ACCEPTED') {
+          badge.className = 'px-4 py-2 rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 border bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-lg shadow-emerald-500/10 animate-pulse';
+          badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> <span>CADEIA ACEITA!</span>`;
+        } else {
+          badge.className = 'px-4 py-2 rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 border bg-rose-500/10 text-rose-400 border-rose-500/40 shadow-lg shadow-rose-500/10';
+          badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span> <span>CADEIA REJEITADA</span>`;
+        }
+      } else {
+        badge.className = 'px-4 py-2 rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 border bg-surface-800 text-violet-300 border-violet-500/30';
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-violet-400 animate-pulse"></span> <span>Simulando passo a passo...</span>`;
+      }
+    }
+
+    function stepForward() {
+      if (currentStepIndex < currentTrace.length - 1) {
+        currentStepIndex++;
+        updateSimulationUI();
+        drawGraph();
+      } else {
+        pausePlayback();
+      }
+    }
+
+    function stepBackward() {
+      if (currentStepIndex > 0) {
+        currentStepIndex--;
+        updateSimulationUI();
+        drawGraph();
+      }
+    }
+
+    function resetSimulation() {
+      pausePlayback();
+      currentStepIndex = 0;
+      updateSimulationUI();
+      drawGraph();
+    }
+
+    function togglePlay() {
+      if (isPlaying) {
+        pausePlayback();
+      } else {
+        startPlayback();
+      }
+    }
+
+    function startPlayback() {
+      if (currentStepIndex >= currentTrace.length - 1) {
+        currentStepIndex = 0;
+      }
+      isPlaying = true;
+      document.getElementById('labelPlay').textContent = 'Pausar (Pause)';
+      document.getElementById('iconPlay').innerHTML = '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>';
+
+      const intervalMs = parseInt(document.getElementById('speedSlider').value);
+      playInterval = setInterval(() => {
+        if (currentStepIndex < currentTrace.length - 1) {
+          stepForward();
+        } else {
+          pausePlayback();
+        }
+      }, intervalMs);
+    }
+
+    function pausePlayback() {
+      isPlaying = false;
+      if (playInterval) clearInterval(playInterval);
+      playInterval = null;
+      document.getElementById('labelPlay').textContent = 'Executar (Play)';
+      document.getElementById('iconPlay').innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>';
+    }
+
+    // --- CONTROLS SETUP ---
+    function setupControls() {
+      document.getElementById('presetSelector').onchange = (e) => loadPreset(e.target.value);
+      document.getElementById('btnAtualizarGrafo').onclick = () => {
+        compileDFA();
+        loadStringAndPrepareTape();
+      };
+
+      document.getElementById('btnLoadString').onclick = () => loadStringAndPrepareTape();
+      document.getElementById('inputCadeia').onkeydown = (e) => {
+        if (e.key === 'Enter') loadStringAndPrepareTape();
+      };
+      document.getElementById('btnClearCadeia').onclick = () => {
+        document.getElementById('inputCadeia').value = '';
+        loadStringAndPrepareTape();
+      };
+
+      document.getElementById('btnStepForward').onclick = stepForward;
+      document.getElementById('btnStepBack').onclick = stepBackward;
+      document.getElementById('btnResetSim').onclick = resetSimulation;
+      document.getElementById('btnPlayPause').onclick = togglePlay;
+      document.getElementById('btnRunInstant').onclick = () => {
+        pausePlayback();
+        currentStepIndex = currentTrace.length - 1;
+        updateSimulationUI();
+        drawGraph();
+      };
+
+      const slider = document.getElementById('speedSlider');
+      slider.oninput = (e) => {
+        const val = e.target.value;
+        document.getElementById('speedLabel').textContent = `${(val / 1000).toFixed(1)}s`;
+        if (isPlaying) {
+          pausePlayback();
+          startPlayback();
+        }
+      };
+
+      // File Uploader
+      document.getElementById('fileUploader').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const lines = event.target.result.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+          if (lines.length >= 4) {
+            document.getElementById('inputAlfabeto').value = lines[0];
+            document.getElementById('inputEstados').value = lines[1];
+            document.getElementById('inputInicial').value = lines[2];
+            document.getElementById('inputFinais').value = lines[3];
+            document.getElementById('inputTransicoes').value = lines.slice(4).join('\n');
+            compileDFA();
+            autoLayoutNodes();
+            loadStringAndPrepareTape();
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      // Table toggle
+      document.getElementById('btnToggleTable').onclick = () => {
+        const c = document.getElementById('tableContainer');
+        const icon = document.getElementById('tableToggleIcon');
+        if (c.classList.contains('hidden')) {
+          c.classList.remove('hidden');
+          icon.innerHTML = '&minus;';
+        } else {
+          c.classList.add('hidden');
+          icon.innerHTML = '&plus;';
+        }
+      };
+
+      // Batch Modal
+      document.getElementById('btnOpenBatchModal').onclick = () => {
+        document.getElementById('batchModal').classList.remove('hidden');
+      };
+      document.getElementById('btnCloseBatchModal').onclick = () => {
+        document.getElementById('batchModal').classList.add('hidden');
+      };
+      document.getElementById('btnRunBatch').onclick = runBatchTests;
+
+      // Export SVG for Figma
+      document.getElementById('btnExportSVG').onclick = exportSVG;
+    }
+
+    function runBatchTests() {
+      const text = document.getElementById('batchInputStrings').value;
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const tbody = document.getElementById('batchResultsTable');
+      tbody.innerHTML = '';
+
+      lines.forEach((str, idx) => {
+        const res = dfa.simulate(str);
+        const path = res.trace.map(t => t.state).join(' &rarr; ');
+        const badge = res.accepted
+          ? '<span class="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">ACEITA</span>'
+          : '<span class="text-rose-400 font-bold bg-rose-500/10 border border-rose-500/30 px-2 py-0.5 rounded">REJEITADA</span>';
+
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-surface-850';
+        row.innerHTML = `
+          <td class="px-4 py-2 text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-2 font-bold text-white">${str}</td>
+          <td class="px-4 py-2">${badge}</td>
+          <td class="px-4 py-2 text-xs text-slate-400">${path}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function exportSVG() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">\n`;
+      svg += `<rect width="100%" height="100%" fill="#0b0f19"/>\n`;
+      
+      // Defs
+      svg += `<defs>\n`;
+      svg += `  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">\n`;
+      svg += `    <path d="M 0 0 L 10 5 L 0 10 z" fill="#818cf8"/>\n`;
+      svg += `  </marker>\n`;
+      svg += `</defs>\n`;
+
+      // Edges
+      svg += `<g id="transitions" stroke="#64748b" stroke-width="2">\n`;
+      dfa.transitions.forEach((dest, key) => {
+        const [orig, sym] = key.split(':');
+        const p1 = nodePositions[orig];
+        const p2 = nodePositions[dest];
+        if (!p1 || !p2) return;
+        const x1 = p1.x + panX;
+        const y1 = p1.y + panY;
+        const x2 = p2.x + panX;
+        const y2 = p2.y + panY;
+        if (orig === dest) {
+          svg += `  <path d="M ${x1} ${y1-28} C ${x1-25} ${y1-65}, ${x1+25} ${y1-65}, ${x1+10} ${y1-28}" fill="none" marker-end="url(#arrow)"/>\n`;
+          svg += `  <text x="${x1}" y="${y1-70}" fill="#e2e8f0" font-family="sans-serif" font-size="12" text-anchor="middle">${sym}</text>\n`;
+        } else {
+          svg += `  <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#arrow)"/>\n`;
+          svg += `  <text x="${(x1+x2)/2}" y="${(y1+y2)/2 - 8}" fill="#e2e8f0" font-family="sans-serif" font-size="12" text-anchor="middle">${sym}</text>\n`;
+        }
+      });
+      svg += `</g>\n`;
+
+      // Nodes
+      svg += `<g id="states">\n`;
+      dfa.states.forEach(state => {
+        const pos = nodePositions[state] || { x: 0, y: 0 };
+        const cx = pos.x + panX;
+        const cy = pos.y + panY;
+        const isFinal = dfa.finalStates.has(state);
+        svg += `  <circle cx="${cx}" cy="${cy}" r="28" fill="#1e293b" stroke="#7c3aed" stroke-width="2.5"/>\n`;
+        if (isFinal) {
+          svg += `  <circle cx="${cx}" cy="${cy}" r="23" fill="none" stroke="#a78bfa" stroke-width="1.5"/>\n`;
+        }
+        svg += `  <text x="${cx}" y="${cy+4}" fill="#ffffff" font-family="monospace" font-size="13" font-weight="bold" text-anchor="middle">${state}</text>\n`;
+      });
+      svg += `</g>\n</svg>`;
+
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'automato-afd.svg';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

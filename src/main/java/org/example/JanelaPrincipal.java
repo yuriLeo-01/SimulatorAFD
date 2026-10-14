@@ -138,22 +138,25 @@ public class JanelaPrincipal extends JFrame {
         JFileChooser fileChooser = new JFileChooser();
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File arquivo = fileChooser.getSelectedFile();
-            try (Scanner scanner = new Scanner(arquivo)) {
-                if (scanner.hasNextLine()) txtAlfabeto.setText(scanner.nextLine().trim());
-                if (scanner.hasNextLine()) txtEstados.setText(scanner.nextLine().trim());
-                if (scanner.hasNextLine()) txtEstadoInicial.setText(scanner.nextLine().trim());
-                if (scanner.hasNextLine()) txtEstadosFinais.setText(scanner.nextLine().trim());
+            try {
+                Automato automato = GerenciadorIO.montarPorArquivo(arquivo);
+                this.automatoAtual = automato;
+                this.simulador = new Simulador(automatoAtual);
 
-                StringBuilder transicoesBuilder = new StringBuilder();
-                while (scanner.hasNextLine()) {
-                    String linha = scanner.nextLine().trim();
-                    if (!linha.isEmpty()) {
-                        transicoesBuilder.append(linha).append("\n");
-                    }
+                txtAlfabeto.setText(String.join(" ", automato.getAlfabeto()));
+                txtEstados.setText(String.join(" ", automato.getEstados().keySet()));
+                txtEstadoInicial.setText(automato.getEstadoInicial() != null ? automato.getEstadoInicial().getNome() : "");
+                txtEstadosFinais.setText(automato.getEstadosFinais().stream().map(Estado::getNome).reduce((a, b) -> a + " " + b).orElse(""));
+
+                StringBuilder sb = new StringBuilder();
+                for (Transicao t : automato.getTodasTransicoes()) {
+                    sb.append(t.toLinhaArquivo()).append("\n");
                 }
-                txtTransicoes.setText(transicoesBuilder.toString().trim());
+                txtTransicoes.setText(sb.toString().trim());
 
-                construirAutomatoManualmente();
+                lblResultado.setText("Autômato carregado do arquivo com sucesso! (" + automato.getEstados().size() + " estados)");
+                lblResultado.setForeground(new Color(0, 128, 0));
+                JOptionPane.showMessageDialog(this, "Autômato AFD carregado com sucesso via GerenciadorIO!", "Arquivo Carregado", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (Exception ex) {
                 lblResultado.setText("Erro ao carregar arquivo!");
@@ -171,13 +174,11 @@ public class JanelaPrincipal extends JFrame {
 
         String cadeia = txtCadeiaEntrada.getText().trim();
         try {
-            boolean aceita = simulador.simular(cadeia);
-            if (aceita) {
-                lblResultado.setText("Cadeia '" + cadeia + "' -> ACEITA!");
-                lblResultado.setForeground(new Color(0, 150, 0));
+            ResultadoSimulacao res = simulador.executar(cadeia);
+            if (res.isAceita()) {
+                lblResultado.setText("<html><center>Cadeia '" + cadeia + "' &rarr; <font color='green'><b>ACEITA!</b></font><br><span style='font-size:11px; color:#555;'>Caminho: " + res.getCaminhoFormatado() + " (" + res.getMensagemDetalhada() + ")</span></center></html>");
             } else {
-                lblResultado.setText("Cadeia '" + cadeia + "' -> REJEITADA!");
-                lblResultado.setForeground(Color.RED);
+                lblResultado.setText("<html><center>Cadeia '" + cadeia + "' &rarr; <font color='red'><b>REJEITADA!</b></font><br><span style='font-size:11px; color:#555;'>Caminho: " + res.getCaminhoFormatado() + " (" + res.getMensagemDetalhada() + ")</span></center></html>");
             }
         } catch (AutomatoInvalidoException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Erro de Simulação", JOptionPane.ERROR_MESSAGE);
