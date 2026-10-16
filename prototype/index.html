@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoFlow Studio | Simulador Premium de Autômatos Finitos (AFD)</title>
+  <title>AFD Studio | Laboratório de Linguagens Formais</title>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -12,357 +13,386 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#f5f3ff',
-              100: '#ede9fe',
-              200: '#ddd6fe',
-              500: '#8b5cf6',
-              600: '#7c3aed',
-              700: '#6d28d9',
-              800: '#5b21b6',
-              900: '#4c1d95',
-              950: '#2e1065',
-            },
-            surface: {
-              900: '#0f172a',
-              850: '#131e36',
-              800: '#1e293b',
-              750: '#26344d',
-              700: '#334155',
+            app: {
+              bg: '#0f1115',
+              subtle: '#15181e',
+              surface: '#1b1f27',
+              border: '#282e3a',
+              hover: '#242a35',
+              text: '#e6edf3',
+              muted: '#8b949e',
+              accent: '#3b82f6',
+              accentHover: '#2563eb',
+              success: '#10b981',
+              danger: '#f43f5e',
+              warning: '#f59e0b',
             }
           },
           fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace']
           }
         }
       }
     }
   </script>
+
+  <!-- Typography: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       user-select: none;
     }
     .custom-scroll::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
     }
     .custom-scroll::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
+      background: transparent;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 4px;
+      background: #282e3a;
+      border-radius: 3px;
     }
     .custom-scroll::-webkit-scrollbar-thumb:hover {
-      background: #64748b;
+      background: #3b4455;
     }
-    .glow-active {
-      box-shadow: 0 0 25px rgba(139, 92, 246, 0.6), 0 0 50px rgba(124, 58, 237, 0.3);
+    /* Subtle dot grid pattern */
+    .bg-dot-pattern {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
     }
-    .pulse-node {
-      animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-    }
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.15); opacity: 0.2; }
-      100% { transform: scale(0.95); opacity: 0.8; }
+    .tape-cell-transition {
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
   </style>
 </head>
-<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col overflow-hidden">
+<body class="bg-app-bg text-app-text min-h-screen flex flex-col overflow-hidden">
 
-  <!-- TOP NAVIGATION BAR -->
-  <header class="h-14 border-b border-slate-800/80 bg-surface-900/90 backdrop-blur-md flex items-center justify-between px-5 z-20">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 via-indigo-500 to-purple-400 flex items-center justify-center shadow-lg shadow-violet-500/25">
-        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="3" stroke-width="2.5"></circle>
-          <circle cx="12" cy="12" r="8" stroke-width="2" stroke-dasharray="3 3"></circle>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2M2 12h2m16 0h2"></path>
-        </svg>
+<!-- TOP BAR: MINIMAL & FUNCTIONAL -->
+<header class="h-14 border-b border-app-border bg-app-subtle px-4 flex items-center justify-between z-20 flex-shrink-0">
+
+  <!-- Brand & Language Formal Selector -->
+  <div class="flex items-center gap-5">
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded bg-app-accent flex items-center justify-center text-white font-mono font-bold text-xs shadow-sm">
+        &delta;
       </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="font-extrabold text-base tracking-tight text-white">AutoFlow<span class="text-violet-400 font-medium">Studio</span></span>
-          <span class="text-[10px] font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">v2.0 PRO</span>
-        </div>
-        <p class="text-[10px] text-slate-400 -mt-0.5">Simulador de Autômatos Finitos Determinísticos</p>
+      <div class="flex flex-col">
+          <span class="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
+            AFD <span class="font-normal text-app-muted">Studio</span>
+          </span>
       </div>
     </div>
 
-    <!-- PRESETS & TOOLS -->
-    <div class="flex items-center gap-3">
-      <div class="flex items-center bg-surface-800 border border-slate-700/60 rounded-lg p-1 text-xs">
-        <span class="text-slate-400 px-2 font-medium">Exemplos:</span>
-        <select id="presetSelector" class="bg-surface-850 text-slate-200 border-none outline-none rounded py-1 px-2.5 text-xs font-medium cursor-pointer hover:bg-slate-700 transition">
-          <option value="ends01">Termina em '01' (Exemplo Original)</option>
-          <option value="evenZeros">Número par de 0's</option>
-          <option value="mod3">Binário Divisível por 3</option>
-          <option value="patternAbb">Contém padrão 'abb'</option>
+    <div class="h-4 w-px bg-app-border"></div>
+
+    <!-- Formal Language Preset Selector -->
+    <div class="flex items-center gap-2 text-xs">
+      <label for="formalLangSelect" class="text-app-muted font-medium">Linguagem Formal:</label>
+      <div class="relative">
+        <select id="formalLangSelect" class="bg-app-surface border border-app-border rounded-md px-2.5 py-1 text-xs text-app-text font-mono hover:border-app-accent focus:outline-none focus:border-app-accent transition cursor-pointer pr-7">
+          <option value="ends01">L₁ = { w &isin; {0,1}* | w termina em '01' }</option>
+          <option value="even0s">L₂ = { w &isin; {0,1}* | |w|&#8320; &equiv; 0 (mod 2) }</option>
+          <option value="mod3">L₃ = { w &isin; {0,1}* | bin(w) mod 3 = 0 }</option>
+          <option value="containsAbb">L₄ = { w &isin; {a,b}* | contém a subcadeia 'abb' }</option>
+          <option value="noDoubleOnes">L₅ = { w &isin; {0,1}* | não contém '11' consecutivo }</option>
+          <option value="custom">✏️ [Personalizado / Criar do Zero]</option>
         </select>
       </div>
-
-      <button id="btnOpenBatchModal" class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs font-medium transition">
-        <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-        Bateria de Testes
-      </button>
-
-      <button id="btnExportSVG" class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs font-medium transition" title="Exportar grafo em vetor SVG">
-        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-        Exportar SVG / Figma
-      </button>
-
-      <a href="https://www.figma.com" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-lg text-xs font-semibold shadow-md shadow-violet-600/30 transition">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 38 57" fill="none">
-          <path d="M19 28.5C19 23.2533 23.2533 19 28.5 19C33.7467 19 38 23.2533 38 28.5C38 33.7467 33.7467 38 28.5 38C23.2533 38 19 33.7467 19 28.5Z" fill="white"/>
-          <path d="M0 47.5C0 42.2533 4.25329 38 9.5 38H19V47.5C19 52.7467 14.7467 57 9.5 57C4.25329 57 0 52.7467 0 47.5Z" fill="white"/>
-          <path d="M19 0V19H28.5C33.7467 19 38 14.7467 38 9.5C38 4.25329 33.7467 0 28.5 0H19Z" fill="white"/>
-          <path d="M0 9.5C0 14.7467 4.25329 19 9.5 19H19V0H9.5C4.25329 0 0 4.25329 0 9.5Z" fill="white"/>
-          <path d="M0 28.5C0 33.7467 4.25329 38 9.5 38H19V19H9.5C4.25329 19 0 23.2533 0 28.5Z" fill="white"/>
-        </svg>
-        Figma Specs
-      </a>
     </div>
-  </header>
+  </div>
 
-  <!-- MAIN APPLICATION LAYOUT -->
-  <main class="flex-1 flex overflow-hidden">
+  <!-- Center/Right Actions -->
+  <div class="flex items-center gap-2">
+    <button id="btnNewAutomaton" class="flex items-center gap-1.5 px-3 py-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded-md text-xs font-medium text-app-text transition" title="Limpar e criar um autômato do zero">
+      <svg class="w-3.5 h-3.5 text-app-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+      <span>Novo AFD</span>
+    </button>
 
-    <!-- LEFT SIDEBAR: CONFIGURATION & SPECIFICATION -->
-    <aside class="w-[360px] border-r border-slate-800/80 bg-surface-900 flex flex-col flex-shrink-0 z-10 custom-scroll overflow-y-auto">
-      
-      <!-- TUPLE SUMMARY BANNER -->
-      <div class="p-4 border-b border-slate-800 bg-surface-850/40">
+    <button id="btnMinimize" class="flex items-center gap-1.5 px-3 py-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded-md text-xs font-medium text-app-text transition" title="Minimizar autômato utilizando o Algoritmo de Moore">
+      <svg class="w-3.5 h-3.5 text-app-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+      <span>Minimizar</span>
+    </button>
+
+    <button id="btnBatchModal" class="flex items-center gap-1.5 px-3 py-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded-md text-xs font-medium text-app-text transition" title="Testar múltiplas cadeias de uma vez">
+      <svg class="w-3.5 h-3.5 text-app-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+      <span>Testes em Lote</span>
+    </button>
+
+    <div class="h-4 w-px bg-app-border"></div>
+
+    <!-- Import / Export Dropdowns -->
+    <label class="flex items-center gap-1.5 px-3 py-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded-md text-xs font-medium text-app-text transition cursor-pointer" title="Importar arquivo .txt com o autômato">
+      <svg class="w-3.5 h-3.5 text-app-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+      <span>Importar .txt</span>
+      <input type="file" id="fileTxtInput" accept=".txt" class="hidden">
+    </label>
+
+    <button id="btnExportTxt" class="flex items-center gap-1.5 px-3 py-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded-md text-xs font-medium text-app-text transition" title="Exportar no formato .txt padrão">
+      <svg class="w-3.5 h-3.5 text-app-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+      <span>Exportar</span>
+    </button>
+
+    <button id="btnExportSvg" class="flex items-center gap-1 px-2.5 py-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded-md text-xs font-mono text-app-muted hover:text-white transition" title="Exportar grafo em vetor SVG para Figma/Relatório">
+      SVG
+    </button>
+  </div>
+
+</header>
+
+<!-- MAIN WORKSPACE LAYOUT -->
+<main class="flex-1 flex overflow-hidden">
+
+  <!-- LEFT SIDEBAR: DEFINITION & EDITORS -->
+  <aside class="w-[340px] border-r border-app-border bg-app-subtle flex flex-col flex-shrink-0 z-10 custom-scroll overflow-y-auto">
+
+    <!-- CARD 1: FORMAL TUPLE SUMMARY -->
+    <div class="p-3.5 border-b border-app-border">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] font-mono uppercase tracking-wider text-app-muted font-semibold">5-Tupla Formal</span>
+        <span id="completenessBadge" class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            DFA COMPLETO
+          </span>
+      </div>
+      <div class="bg-app-surface border border-app-border rounded-md p-2 font-mono text-xs text-app-text flex flex-col gap-1">
+        <div class="text-blue-400 font-semibold">M = (Q, &Sigma;, &delta;, q&#8320;, F)</div>
+        <div id="tupleDetail" class="text-[11px] text-app-muted space-y-0.5 pt-1 border-t border-app-border/50">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: QUICK EDIT CONTROLS -->
+    <div class="p-3.5 space-y-4 flex-1">
+
+      <!-- Alfabeto Input -->
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-xs font-semibold text-app-text">&Sigma; &mdash; Alfabeto</label>
+          <span class="text-[10px] text-app-muted font-mono">espaço para separar</span>
+        </div>
+        <input type="text" id="editAlphabet" class="w-full bg-app-surface text-app-text text-xs font-mono px-2.5 py-1.5 rounded border border-app-border focus:outline-none focus:border-app-accent transition" value="0 1">
+      </div>
+
+      <!-- Estados Manager -->
+      <div>
         <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Definição Formal</span>
-          <span id="badgeDeterminismo" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">AFD VÁLIDO</span>
+          <label class="text-xs font-semibold text-app-text">Q &mdash; Estados</label>
+          <button id="btnAddStateModal" class="text-[11px] text-app-accent hover:underline font-medium">+ Adicionar Estado</button>
         </div>
-        <div class="font-mono text-xs bg-surface-900/80 p-2.5 rounded-lg border border-slate-800 text-violet-300 flex items-center justify-center">
-          M = (Q, &Sigma;, &delta;, q&#8320;, F)
+        <div id="statesListContainer" class="flex flex-wrap gap-1.5 p-2 bg-app-surface border border-app-border rounded-md min-h-[44px]">
+          <!-- State badges populated via JS -->
+        </div>
+        <div class="flex items-center justify-between text-[10px] text-app-muted mt-1 px-1">
+          <span>Clique num estado para alternar Inicial (<span class="text-blue-400">&rarr;</span>) / Final (<span class="text-emerald-400">&lowast;</span>)</span>
         </div>
       </div>
 
-      <!-- FORM FIELDS -->
-      <div class="p-4 space-y-4 flex-1">
-        
-        <!-- Alfabeto -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-            <span>&Sigma; - Alfabeto</span>
-            <span class="text-[10px] text-slate-500">separado por espaço</span>
-          </label>
-          <input type="text" id="inputAlfabeto" value="0 1" class="w-full bg-surface-800 text-slate-100 text-sm font-mono px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
+      <!-- Transições Editor -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-xs font-semibold text-app-text">&delta; &mdash; Transições</label>
+          <span class="text-[10px] text-app-muted font-mono">origem &nbsp; símb &nbsp; dest</span>
         </div>
+        <textarea id="editTransitions" rows="6" class="w-full bg-app-surface text-app-text text-xs font-mono p-2.5 rounded border border-app-border focus:outline-none focus:border-app-accent transition custom-scroll leading-relaxed" placeholder="q0 0 q1&#10;q0 1 q0"></textarea>
 
-        <!-- Estados -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-            <span>Q - Conjunto de Estados</span>
-            <span class="text-[10px] text-slate-500">separado por espaço</span>
-          </label>
-          <input type="text" id="inputEstados" value="q0 q1 q2" class="w-full bg-surface-800 text-slate-100 text-sm font-mono px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
-        </div>
-
-        <!-- Estado Inicial & Finais -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">q&#8320; - Inicial</label>
-            <input type="text" id="inputInicial" value="q0" class="w-full bg-surface-800 text-slate-100 text-sm font-mono px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">F - Finais (Aceitação)</label>
-            <input type="text" id="inputFinais" value="q2" class="w-full bg-surface-800 text-slate-100 text-sm font-mono px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
-          </div>
-        </div>
-
-        <!-- Transições -->
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-semibold text-slate-300">&delta; - Função de Transição</label>
-            <span class="text-[10px] text-slate-500">origem &nbsp; símbolo &nbsp; destino</span>
-          </div>
-          <textarea id="inputTransicoes" rows="7" class="w-full bg-surface-800 text-slate-100 text-xs font-mono p-3 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition leading-relaxed custom-scroll">q0 0 q1
-q0 1 q0
-q1 0 q1
-q1 1 q2
-q2 0 q1
-q2 1 q0</textarea>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-2 pt-1">
-          <button id="btnAtualizarGrafo" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-2.5 px-3 rounded-lg text-xs shadow-md shadow-violet-600/30 transition flex items-center justify-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            Recompilar AFD
+        <div class="flex gap-2 mt-2">
+          <button id="btnApplyChanges" class="flex-1 bg-app-accent hover:bg-app-accentHover text-white font-medium text-xs py-1.5 px-3 rounded transition flex items-center justify-center gap-1.5 shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <span>Aplicar Alterações</span>
           </button>
-          
-          <label class="bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer transition flex items-center justify-center gap-1" title="Carregar arquivo .txt no formato padrão">
-            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-            <input type="file" id="fileUploader" accept=".txt" class="hidden">
-            .txt
-          </label>
         </div>
+      </div>
 
-        <!-- Transições em Tabela -->
-        <div class="pt-2">
-          <button id="btnToggleTable" class="w-full flex items-center justify-between text-xs font-semibold text-slate-400 hover:text-slate-200 py-1 border-t border-slate-800">
-            <span>Matriz de Transição (&delta;)</span>
-            <span id="tableToggleIcon">&plus;</span>
+      <!-- Matriz de Transição Delta Accordion -->
+      <div class="border-t border-app-border pt-3">
+        <button id="btnToggleMatrix" class="w-full flex items-center justify-between text-xs font-semibold text-app-text hover:text-white transition">
+          <span>Matriz de Transição (&delta;)</span>
+          <span id="matrixIcon" class="text-app-muted">&plus;</span>
+        </button>
+        <div id="matrixContainer" class="hidden mt-2 border border-app-border rounded overflow-x-auto custom-scroll">
+          <table id="matrixTable" class="w-full text-xs text-left font-mono">
+            <!-- Dynamically populated table -->
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR FOOTER -->
+    <div class="p-3 border-t border-app-border bg-app-bg text-[11px] text-app-muted flex items-center justify-between">
+      <span id="statsLabel">3 estados, 2 símbolos</span>
+      <span class="text-blue-400 font-mono text-[10px]">&lambda; / &epsilon; não-permitido em AFD</span>
+    </div>
+
+  </aside>
+
+  <!-- CENTER AREA: INTERACTIVE GRAPH CANVAS + CONTROLS -->
+  <div class="flex-1 flex flex-col overflow-hidden relative">
+
+    <!-- CANVAS OVERLAY TOOLBAR -->
+    <div class="absolute top-3 right-3 z-10 flex items-center gap-1 bg-app-surface/90 backdrop-blur border border-app-border p-1 rounded-md shadow-md text-xs">
+      <button id="btnAutoLayout" class="px-2 py-1 hover:bg-app-hover rounded text-app-text text-[11px] font-medium transition" title="Reorganizar nós em círculo">
+        Auto Layout
+      </button>
+      <div class="h-3 w-px bg-app-border mx-1"></div>
+      <button id="btnZoomIn" class="p-1.5 hover:bg-app-hover rounded text-app-muted hover:text-white transition" title="Zoom In">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+      </button>
+      <button id="btnZoomOut" class="p-1.5 hover:bg-app-hover rounded text-app-muted hover:text-white transition" title="Zoom Out">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+      </button>
+      <button id="btnResetView" class="p-1.5 hover:bg-app-hover rounded text-app-muted hover:text-white transition" title="Centralizar visualização">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+      </button>
+      <span id="zoomLevelDisplay" class="font-mono text-[10px] text-app-muted px-1.5">100%</span>
+    </div>
+
+    <!-- CANVAS INSTRUCTION TIP -->
+    <div class="absolute top-3 left-3 z-10 pointer-events-none">
+      <div class="bg-app-surface/85 backdrop-blur border border-app-border/80 px-2.5 py-1 rounded text-[11px] text-app-muted flex items-center gap-1.5 shadow-sm">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+        <span>Dica: <b>Duplo clique</b> no espaço livre cria um novo estado; arraste os nós para ajustar</span>
+      </div>
+    </div>
+
+    <!-- CANVAS ELEMENT -->
+    <div class="flex-1 relative bg-app-bg bg-dot-pattern overflow-hidden cursor-grab active:cursor-grabbing" id="canvasContainer">
+      <canvas id="graphCanvas" class="w-full h-full block"></canvas>
+    </div>
+
+    <!-- BOTTOM CONTROL BAR: TAPE & PLAYBACK CONTROLS -->
+    <div class="border-t border-app-border bg-app-subtle p-3.5 flex flex-col gap-3 z-10">
+
+      <!-- ROW 1: TAPE VISUALIZATION & VERDICT -->
+      <div class="flex items-center justify-between gap-4">
+
+        <!-- Entrada de Palavra (w) -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-semibold text-app-muted">w:</span>
+          <div class="relative">
+            <input type="text" id="inputString" value="0101" placeholder="Palavra para testar..." class="w-48 bg-app-surface text-app-text text-xs font-mono px-2.5 py-1.5 rounded border border-app-border focus:outline-none focus:border-app-accent transition">
+            <button id="btnClearString" class="absolute right-2 top-1/2 -translate-y-1/2 text-app-muted hover:text-white text-xs" title="Limpar">&times;</button>
+          </div>
+          <button id="btnLoadTape" class="px-3 py-1.5 bg-app-surface hover:bg-app-hover border border-app-border text-app-text text-xs font-medium rounded transition">
+            Carregar Fita
           </button>
-          <div id="tableContainer" class="hidden mt-2 overflow-x-auto border border-slate-800 rounded-lg">
-            <table id="matrixTable" class="w-full text-xs text-left text-slate-300 font-mono">
-              <!-- Dynamically populated -->
-            </table>
+        </div>
+
+        <!-- Physical Tape Cells -->
+        <div class="flex-1 flex items-center justify-center overflow-x-auto custom-scroll py-0.5 px-3">
+          <div id="tapeContainer" class="flex items-center gap-1">
+            <!-- Dynamically generated tape cells -->
           </div>
+        </div>
+
+        <!-- Status / Verdict Badge -->
+        <div id="verdictBadge" class="flex items-center gap-2 px-3 py-1.5 rounded border border-app-border bg-app-surface text-xs font-mono font-semibold text-app-muted">
+          <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+          <span>Aguardando simulação</span>
         </div>
 
       </div>
 
-      <!-- FOOTER STATUS -->
-      <div class="p-3 border-t border-slate-800 bg-surface-850/30 text-[11px] text-slate-400 flex items-center justify-between">
-        <span id="statesCountInfo">3 estados, 2 símbolos</span>
-        <span class="text-violet-400 flex items-center gap-1 font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          Pronto
-        </span>
-      </div>
+      <!-- ROW 2: CONTROLS & DIAGNOSTIC STEP INFO -->
+      <div class="flex items-center justify-between pt-2 border-t border-app-border/60">
 
-    </aside>
-
-    <!-- CENTER AREA: INTERACTIVE CANVAS + SIMULATOR CONTROLS -->
-    <div class="flex-1 flex flex-col overflow-hidden relative">
-
-      <!-- CANVAS TOOLBAR OVERLAY -->
-      <div class="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-surface-900/80 backdrop-blur-md p-1.5 rounded-xl border border-slate-800/80 shadow-xl">
-        <button id="btnResetView" class="p-2 hover:bg-surface-800 text-slate-300 rounded-lg text-xs transition" title="Centralizar visualização">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-        </button>
-        <button id="btnZoomIn" class="p-2 hover:bg-surface-800 text-slate-300 rounded-lg text-xs transition" title="Aumentar zoom">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-        </button>
-        <button id="btnZoomOut" class="p-2 hover:bg-surface-800 text-slate-300 rounded-lg text-xs transition" title="Diminuir zoom">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path></svg>
-        </button>
-        <div class="w-px h-4 bg-slate-700 mx-1"></div>
-        <span class="text-[10px] font-mono text-slate-400 px-1.5" id="zoomLevel">100%</span>
-      </div>
-
-      <!-- GRAPH INTERACTIVE CANVAS -->
-      <div class="flex-1 relative bg-[#090d16] overflow-hidden cursor-grab active:cursor-grabbing" id="canvasContainer">
-        <!-- Background Grid Pattern -->
-        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#475569" stroke-width="0.8"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-
-        <canvas id="graphCanvas" class="w-full h-full block"></canvas>
-
-        <!-- Tooltip overlay for node info -->
-        <div id="nodeTooltip" class="hidden absolute pointer-events-none bg-surface-900/95 border border-slate-700 text-slate-200 text-xs px-2.5 py-1.5 rounded-lg shadow-2xl backdrop-blur-md"></div>
-      </div>
-
-      <!-- BOTTOM PANEL: STEP-BY-STEP SIMULATION & TAPE RUNNER -->
-      <div class="border-t border-slate-800/80 bg-surface-900/95 backdrop-blur-md p-4 flex flex-col gap-3.5 z-10 shadow-2xl">
-        
-        <!-- ROW 1: TAPE VISUALIZATION & CURRENT STATUS -->
-        <div class="flex items-center justify-between gap-4">
-          
-          <!-- Input String Field -->
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold text-slate-300 uppercase tracking-wide">Cadeia (w):</span>
-            <div class="relative">
-              <input type="text" id="inputCadeia" value="0101" placeholder="ex: 0101" class="w-48 bg-surface-800 text-slate-100 text-sm font-mono px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 transition">
-              <button id="btnClearCadeia" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs font-bold" title="Limpar">&times;</button>
-            </div>
-            <button id="btnLoadString" class="px-3 py-1.5 bg-surface-750 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-600/50 transition">
-              Carregar Fita
-            </button>
-          </div>
-
-          <!-- Simulation Tape View -->
-          <div class="flex-1 flex items-center justify-center overflow-x-auto custom-scroll py-1 px-4">
-            <div class="flex items-center gap-1.5" id="tapeCells">
-              <!-- Dynamically populated cells -->
-            </div>
-          </div>
-
-          <!-- Verdict Badge -->
-          <div id="statusBadge" class="px-4 py-2 rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 border bg-surface-800 text-slate-400 border-slate-700">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
-            <span>Aguardando Execução</span>
-          </div>
-
+        <!-- Stepper buttons -->
+        <div class="flex items-center gap-1.5">
+          <button id="btnReset" class="p-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded text-app-text text-xs transition" title="Reiniciar do Início">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"></path></svg>
+          </button>
+          <button id="btnStepPrev" class="p-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded text-app-text text-xs transition" title="Passo Anterior">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          <button id="btnPlay" class="px-3 py-1.5 bg-app-accent hover:bg-app-accentHover text-white rounded text-xs font-medium flex items-center gap-1.5 shadow-sm transition">
+            <svg id="playIcon" class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+            <span id="playLabel">Reproduzir</span>
+          </button>
+          <button id="btnStepNext" class="p-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded text-app-text text-xs transition" title="Próximo Passo">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+          <button id="btnFastForward" class="p-1.5 bg-app-surface hover:bg-app-hover border border-app-border rounded text-app-text text-xs transition" title="Resultado Instantâneo">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </button>
         </div>
 
-        <!-- ROW 2: PLAYBACK CONTROLS & STEP LOG -->
-        <div class="flex items-center justify-between pt-1 border-t border-slate-800/60">
-          
-          <!-- Playback Buttons -->
-          <div class="flex items-center gap-1.5">
-            <button id="btnResetSim" class="p-2 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs transition" title="Reiniciar do Início">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"></path></svg>
-            </button>
-            <button id="btnStepBack" class="p-2 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs transition" title="Passo Anterior">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            </button>
-            <button id="btnPlayPause" class="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md shadow-violet-600/30 transition">
-              <svg id="iconPlay" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-              <span id="labelPlay">Executar (Play)</span>
-            </button>
-            <button id="btnStepForward" class="p-2 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs transition" title="Próximo Passo">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </button>
-            <button id="btnRunInstant" class="p-2 bg-surface-800 hover:bg-surface-750 text-slate-300 border border-slate-700/60 rounded-lg text-xs transition" title="Resultado Instantâneo">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            </button>
-          </div>
+        <!-- Speed Slider -->
+        <div class="flex items-center gap-2 text-xs text-app-muted">
+          <span class="text-[11px]">Intervalo:</span>
+          <input type="range" id="speedInput" min="200" max="1400" step="100" value="600" class="w-20 accent-blue-500 cursor-pointer">
+          <span id="speedValue" class="font-mono text-[10px] text-app-text w-9">0.6s</span>
+        </div>
 
-          <!-- Speed Slider -->
-          <div class="flex items-center gap-2 text-xs text-slate-400">
-            <span>Velocidade:</span>
-            <input type="range" id="speedSlider" min="200" max="1500" step="100" value="700" class="w-24 accent-violet-500 cursor-pointer">
-            <span id="speedLabel" class="font-mono text-[11px] text-slate-300 w-10">0.7s</span>
-          </div>
-
-          <!-- Current Step Diagnostic Text -->
-          <div class="text-xs font-mono text-slate-300 flex items-center gap-3">
-            <div id="stepInfoText" class="text-slate-400">Passo: <span class="text-violet-400 font-bold">0 / 0</span></div>
-            <div class="h-3 w-px bg-slate-700"></div>
-            <div id="activeStateText" class="text-slate-300">Estado Atual: <span class="text-emerald-400 font-bold">q0</span></div>
-          </div>
-
+        <!-- Step Trace Text -->
+        <div class="text-xs font-mono flex items-center gap-3">
+          <div id="stepCounter" class="text-app-muted">Passo: <span class="text-white font-semibold">0 / 0</span></div>
+          <div class="h-3 w-px bg-app-border"></div>
+          <div id="activeStateDisplay" class="text-app-text">Nó Ativo: <span class="text-blue-400 font-semibold">-</span></div>
+          <div class="h-3 w-px bg-app-border"></div>
+          <div id="stepExplanation" class="text-app-muted text-[11px] truncate max-w-[280px]">Pronto para simular.</div>
         </div>
 
       </div>
 
     </div>
 
-  </main>
+  </div>
 
-  <!-- BATCH TESTING MODAL -->
-  <div id="batchModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-surface-900 border border-slate-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
-      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-violet-600/20 text-violet-400 flex items-center justify-center font-bold text-sm">✓</div>
-          <h3 class="text-base font-bold text-white">Bateria de Testes em Lote</h3>
-        </div>
-        <button id="btnCloseBatchModal" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+</main>
+
+<!-- MODAL: ADD STATE -->
+<div id="stateModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-app-surface border border-app-border rounded-lg w-full max-w-sm overflow-hidden shadow-xl p-5 space-y-4">
+    <div class="flex items-center justify-between border-b border-app-border pb-3">
+      <h3 class="text-sm font-bold text-white">Criar Novo Estado</h3>
+      <button id="btnCloseStateModal" class="text-app-muted hover:text-white text-base">&times;</button>
+    </div>
+
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-semibold text-app-text mb-1">Nome do Estado:</label>
+        <input type="text" id="newStateName" placeholder="ex: q3" class="w-full bg-app-bg text-app-text text-xs font-mono px-2.5 py-1.5 rounded border border-app-border focus:outline-none focus:border-app-accent">
       </div>
 
-      <div class="p-6 overflow-y-auto custom-scroll space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Cadeias de Entrada (uma por linha):</label>
-          <textarea id="batchInputStrings" rows="5" class="w-full bg-surface-800 text-slate-100 text-sm font-mono p-3 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 custom-scroll">01
+      <div class="space-y-2 pt-1">
+        <label class="flex items-center gap-2 text-xs text-app-text cursor-pointer">
+          <input type="checkbox" id="checkIsInitial" class="accent-blue-500 rounded">
+          <span>Definir como Estado Inicial (q&#8320;)</span>
+        </label>
+        <label class="flex items-center gap-2 text-xs text-app-text cursor-pointer">
+          <input type="checkbox" id="checkIsFinal" class="accent-emerald-500 rounded">
+          <span>Definir como Estado de Aceitação / Final (F)</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 pt-2 border-t border-app-border">
+      <button id="btnCancelStateModal" class="px-3 py-1.5 rounded text-xs font-medium text-app-muted hover:text-white">Cancelar</button>
+      <button id="btnSaveNewState" class="px-3 py-1.5 bg-app-accent hover:bg-app-accentHover text-white rounded text-xs font-medium">Salvar Estado</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: BATCH TESTING -->
+<div id="batchModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-app-surface border border-app-border rounded-lg w-full max-w-xl overflow-hidden shadow-xl flex flex-col max-h-[85vh]">
+    <div class="p-4 border-b border-app-border flex items-center justify-between">
+      <h3 class="text-sm font-bold text-white flex items-center gap-2">
+        <span>Bateria de Testes em Lote</span>
+        <span class="text-[10px] font-normal text-app-muted font-mono">(uma cadeia por linha)</span>
+      </h3>
+      <button id="btnCloseBatchModal" class="text-app-muted hover:text-white text-base">&times;</button>
+    </div>
+
+    <div class="p-4 overflow-y-auto custom-scroll space-y-4">
+      <div>
+          <textarea id="batchStringsInput" rows="5" class="w-full bg-app-bg text-app-text text-xs font-mono p-2.5 rounded border border-app-border focus:outline-none focus:border-app-accent custom-scroll">01
 001
 110
 0101
@@ -370,896 +400,1223 @@ q2 1 q0</textarea>
 0
 1
 0001</textarea>
-        </div>
+      </div>
 
-        <button id="btnRunBatch" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold py-2.5 rounded-lg text-xs shadow-md transition">
-          Executar Todos os Testes
-        </button>
+      <button id="btnExecuteBatch" class="w-full bg-app-accent hover:bg-app-accentHover text-white font-medium py-2 rounded text-xs transition">
+        Testar Todas as Palavras
+      </button>
 
-        <div class="border border-slate-800 rounded-lg overflow-hidden">
-          <table class="w-full text-xs text-left font-mono">
-            <thead class="bg-surface-800 text-slate-400 uppercase text-[10px]">
-              <tr>
-                <th class="px-4 py-2">#</th>
-                <th class="px-4 py-2">Cadeia (w)</th>
-                <th class="px-4 py-2">Resultado</th>
-                <th class="px-4 py-2">Caminho Percorrido</th>
-              </tr>
-            </thead>
-            <tbody id="batchResultsTable" class="divide-y divide-slate-800/80 text-slate-200">
-              <!-- Filled on test -->
-            </tbody>
-          </table>
-        </div>
+      <div class="border border-app-border rounded overflow-hidden">
+        <table class="w-full text-xs text-left font-mono">
+          <thead class="bg-app-bg text-app-muted text-[10px] uppercase">
+          <tr>
+            <th class="px-3 py-2 border-b border-app-border">#</th>
+            <th class="px-3 py-2 border-b border-app-border">Palavra (w)</th>
+            <th class="px-3 py-2 border-b border-app-border">Resultado</th>
+            <th class="px-3 py-2 border-b border-app-border">Caminho dos Estados</th>
+          </tr>
+          </thead>
+          <tbody id="batchTableBody" class="divide-y divide-app-border text-app-text">
+          <!-- Filled via JS -->
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- SCRIPT ENGINE -->
-  <script>
-    // --- DFA DATA STRUCTURE & CORE LOGIC ---
-    class DFA {
-      constructor() {
-        this.alphabet = new Set();
-        this.states = new Set();
-        this.initialState = null;
-        this.finalStates = new Set();
-        this.transitions = new Map(); // key: "state:symbol" -> "targetState"
-      }
-
-      setAlphabet(symbols) {
-        this.alphabet = new Set(symbols.filter(s => s.trim().length > 0));
-      }
-
-      setStates(statesList) {
-        this.states = new Set(statesList.filter(s => s.trim().length > 0));
-      }
-
-      setInitial(state) {
-        this.initialState = state.trim();
-      }
-
-      setFinals(finalsList) {
-        this.finalStates = new Set(finalsList.filter(s => s.trim().length > 0));
-      }
-
-      addTransition(from, symbol, to) {
-        this.transitions.set(`${from.trim()}:${symbol.trim()}`, to.trim());
-      }
-
-      getNextState(state, symbol) {
-        return this.transitions.get(`${state}:${symbol}`) || null;
-      }
-
-      simulate(inputStr) {
-        const trace = [];
-        let curr = this.initialState;
-        
-        trace.push({
-          step: 0,
-          state: curr,
-          symbolRead: null,
-          remaining: inputStr,
-          status: 'RUNNING',
-          isFinal: this.finalStates.has(curr)
-        });
-
-        if (!curr) {
-          return { accepted: false, trace, reason: 'Estado inicial não definido' };
-        }
-
-        for (let i = 0; i < inputStr.length; i++) {
-          const char = inputStr[i];
-          if (!this.alphabet.has(char)) {
-            trace.push({
-              step: i + 1,
-              state: curr,
-              symbolRead: char,
-              remaining: inputStr.slice(i + 1),
-              status: 'REJECTED_ALPHABET',
-              reason: `Símbolo '${char}' não pertence ao alfabeto &Sigma;`
-            });
-            return { accepted: false, trace, reason: `Símbolo '${char}' fora do alfabeto` };
-          }
-
-          const next = this.getNextState(curr, char);
-          if (!next) {
-            trace.push({
-              step: i + 1,
-              state: curr,
-              symbolRead: char,
-              remaining: inputStr.slice(i + 1),
-              status: 'REJECTED_TRAP',
-              reason: `Nenhuma transição definida para (&delta;(${curr}, ${char}))`
-            });
-            return { accepted: false, trace, reason: `Sem transição para '${char}' em ${curr}` };
-          }
-
-          curr = next;
-          trace.push({
-            step: i + 1,
-            state: curr,
-            symbolRead: char,
-            remaining: inputStr.slice(i + 1),
-            status: 'RUNNING',
-            isFinal: this.finalStates.has(curr)
-          });
-        }
-
-        const isAccepted = this.finalStates.has(curr);
-        trace[trace.length - 1].status = isAccepted ? 'ACCEPTED' : 'REJECTED';
-        return {
-          accepted: isAccepted,
-          trace,
-          finalState: curr,
-          reason: isAccepted ? `Terminou no estado de aceitação [${curr}]` : `Terminou no estado não-final [${curr}]`
-        };
-      }
+<!-- JAVASCRIPT APPLICATION CODE -->
+<script>
+  // --- FORMAL LANGUAGES PRESETS ---
+  const FORMAL_LANGUAGES = {
+    ends01: {
+      name: "L₁: Termina em '01'",
+      description: "Reconhece qualquer sequência binária que termine nos símbolos 0 e 1.",
+      alphabet: "0 1",
+      states: ["q0", "q1", "q2"],
+      initial: "q0",
+      finals: ["q2"],
+      transitions: "q0 0 q1\nq0 1 q0\nq1 0 q1\nq1 1 q2\nq2 0 q1\nq2 1 q0",
+      testString: "0101"
+    },
+    even0s: {
+      name: "L₂: Número Par de 0's",
+      description: "Aceita palavras com quantidade par de '0's (incluindo zero zeros).",
+      alphabet: "0 1",
+      states: ["qPar", "qImpar"],
+      initial: "qPar",
+      finals: ["qPar"],
+      transitions: "qPar 0 qImpar\nqPar 1 qPar\nqImpar 0 qPar\nqImpar 1 qImpar",
+      testString: "10101"
+    },
+    mod3: {
+      name: "L₃: Múltiplo de 3 em Binário",
+      description: "Interpreta a cadeia binária como número e aceita se for divisível por 3.",
+      alphabet: "0 1",
+      states: ["q0", "q1", "q2"],
+      initial: "q0",
+      finals: ["q0"],
+      transitions: "q0 0 q0\nq0 1 q1\nq1 0 q2\nq1 1 q0\nq2 0 q1\nq2 1 q2",
+      testString: "110" // 6 em decimal = divisível por 3
+    },
+    containsAbb: {
+      name: "L₄: Contém a subcadeia 'abb'",
+      description: "Aceita qualquer palavra sobre {a,b} que contenha 'abb' em algum ponto.",
+      alphabet: "a b",
+      states: ["q0", "q1", "q2", "q3"],
+      initial: "q0",
+      finals: ["q3"],
+      transitions: "q0 a q1\nq0 b q0\nq1 a q1\nq1 b q2\nq2 a q1\nq2 b q3\nq3 a q3\nq3 b q3",
+      testString: "aababb"
+    },
+    noDoubleOnes: {
+      name: "L₅: Sem dois 1's seguidos",
+      description: "Rejeita se encontrar o padrão '11'.",
+      alphabet: "0 1",
+      states: ["q0", "q1", "qMorte"],
+      initial: "q0",
+      finals: ["q0", "q1"],
+      transitions: "q0 0 q0\nq0 1 q1\nq1 0 q0\nq1 1 qMorte\nqMorte 0 qMorte\nqMorte 1 qMorte",
+      testString: "01010"
     }
+  };
 
-    // --- APPLICATION STATE ---
-    let dfa = new DFA();
-    let currentTrace = [];
-    let currentStepIndex = 0;
-    let isPlaying = false;
-    let playInterval = null;
+  // --- APPLICATION CORE STATE ---
+  const appState = {
+    alphabet: new Set(['0', '1']),
+    states: new Set(['q0', 'q1', 'q2']),
+    initialState: 'q0',
+    finalStates: new Set(['q2']),
+    transitions: new Map(), // key: "from:symbol" -> "to"
 
-    // Canvas view & node positions
-    const nodePositions = {};
-    let panX = 0;
-    let panY = 0;
-    let zoom = 1.0;
-    let draggedNode = null;
-    let isPanning = false;
-    let startMouseX = 0;
-    let startMouseY = 0;
+    // Node positions on the canvas
+    nodePositions: {},
 
+    // Simulation runtime state
+    simulation: {
+      trace: [],
+      currentIndex: 0,
+      isPlaying: false,
+      intervalId: null,
+      speedMs: 600,
+      currentString: '0101'
+    },
+
+    // Canvas view
+    canvas: {
+      panX: 0,
+      panY: 0,
+      zoom: 1.0,
+      isPanning: false,
+      draggedNode: null,
+      startMouseX: 0,
+      startMouseY: 0
+    }
+  };
+
+  // --- INITIALIZATION ---
+  window.addEventListener('DOMContentLoaded', () => {
+    initCanvas();
+    loadLanguagePreset('ends01');
+    bindEvents();
+  });
+
+  function initCanvas() {
+    const container = document.getElementById('canvasContainer');
     const canvas = document.getElementById('graphCanvas');
     const ctx = canvas.getContext('2d');
-    const container = document.getElementById('canvasContainer');
 
-    // Preset configurations
-    const PRESETS = {
-      ends01: {
-        alphabet: "0 1",
-        states: "q0 q1 q2",
-        initial: "q0",
-        finals: "q2",
-        transitions: "q0 0 q1\nq0 1 q0\nq1 0 q1\nq1 1 q2\nq2 0 q1\nq2 1 q0",
-        sampleString: "0101"
-      },
-      evenZeros: {
-        alphabet: "0 1",
-        states: "qPar qImpar",
-        initial: "qPar",
-        finals: "qPar",
-        transitions: "qPar 0 qImpar\nqPar 1 qPar\nqImpar 0 qPar\nqImpar 1 qImpar",
-        sampleString: "10101"
-      },
-      mod3: {
-        alphabet: "0 1",
-        states: "q0 q1 q2",
-        initial: "q0",
-        finals: "q0",
-        transitions: "q0 0 q0\nq0 1 q1\nq1 0 q2\nq1 1 q0\nq2 0 q1\nq2 1 q2",
-        sampleString: "110"
-      },
-      patternAbb: {
-        alphabet: "a b",
-        states: "q0 q1 q2 q3",
-        initial: "q0",
-        finals: "q3",
-        transitions: "q0 a q1\nq0 b q0\nq1 a q1\nq1 b q2\nq2 a q1\nq2 b q3\nq3 a q3\nq3 b q3",
-        sampleString: "ababb"
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = container.clientWidth * dpr;
+      canvas.height = container.clientHeight * dpr;
+      ctx.scale(dpr, dpr);
+      draw();
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+  }
+
+  // --- LANGUAGE PRESET LOADER ---
+  function loadLanguagePreset(key) {
+    if (key === 'custom') {
+      clearAutomaton();
+      return;
+    }
+
+    const p = FORMAL_LANGUAGES[key];
+    if (!p) return;
+
+    document.getElementById('editAlphabet').value = p.alphabet;
+    document.getElementById('editTransitions').value = p.transitions;
+    document.getElementById('inputString').value = p.testString;
+
+    appState.alphabet = new Set(p.alphabet.trim().split(/\s+/));
+    appState.states = new Set(p.states);
+    appState.initialState = p.initial;
+    appState.finalStates = new Set(p.finals);
+
+    parseTransitionsString(p.transitions);
+    computeAutoLayout();
+    updateUI();
+    prepareSimulationTape();
+  }
+
+  function clearAutomaton() {
+    appState.alphabet = new Set(['0', '1']);
+    appState.states = new Set(['q0']);
+    appState.initialState = 'q0';
+    appState.finalStates = new Set();
+    appState.transitions.clear();
+    appState.nodePositions = { q0: { x: 0, y: 0 } };
+
+    document.getElementById('editAlphabet').value = '0 1';
+    document.getElementById('editTransitions').value = '';
+    document.getElementById('inputString').value = '';
+
+    computeAutoLayout();
+    updateUI();
+    prepareSimulationTape();
+  }
+
+  function parseTransitionsString(text) {
+    appState.transitions.clear();
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const parts = line.trim().split(/\s+/);
+      if (parts.length === 3) {
+        const [from, sym, to] = parts;
+        appState.transitions.set(`${from}:${sym}`, to);
+        appState.states.add(from);
+        appState.states.add(to);
+        appState.alphabet.add(sym);
       }
-    };
+    }
+  }
 
-    // --- INITIALIZATION ---
-    function init() {
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
-      setupCanvasInteractions();
-      loadPreset('ends01');
-      setupControls();
+  // --- SIMULATION ENGINE ---
+  function simulateString(str) {
+    const trace = [];
+    let curr = appState.initialState;
+
+    trace.push({
+      step: 0,
+      state: curr,
+      symbolRead: null,
+      remaining: str,
+      status: 'RUNNING',
+      explanation: curr ? `Início no estado ${curr}` : "Nenhum estado inicial configurado"
+    });
+
+    if (!curr) {
+      return { accepted: false, trace, reason: "Estado inicial indefinido" };
     }
 
-    function resizeCanvas() {
-      canvas.width = container.clientWidth * window.devicePixelRatio;
-      canvas.height = container.clientHeight * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-      drawGraph();
-    }
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      const remaining = str.slice(i + 1);
 
-    function loadPreset(key) {
-      const p = PRESETS[key];
-      if (!p) return;
-      document.getElementById('inputAlfabeto').value = p.alphabet;
-      document.getElementById('inputEstados').value = p.states;
-      document.getElementById('inputInicial').value = p.initial;
-      document.getElementById('inputFinais').value = p.finals;
-      document.getElementById('inputTransicoes').value = p.transitions;
-      document.getElementById('inputCadeia').value = p.sampleString;
-      compileDFA();
-      autoLayoutNodes();
-      loadStringAndPrepareTape();
-    }
-
-    function compileDFA() {
-      const alphabetStr = document.getElementById('inputAlfabeto').value.trim();
-      const statesStr = document.getElementById('inputEstados').value.trim();
-      const initialStr = document.getElementById('inputInicial').value.trim();
-      const finalsStr = document.getElementById('inputFinais').value.trim();
-      const transStr = document.getElementById('inputTransicoes').value.trim();
-
-      dfa = new DFA();
-      dfa.setAlphabet(alphabetStr.split(/\s+/));
-      dfa.setStates(statesStr.split(/\s+/));
-      dfa.setInitial(initialStr);
-      dfa.setFinals(finalsStr.split(/\s+/));
-
-      const lines = transStr.split('\n');
-      for (const line of lines) {
-        const parts = line.trim().split(/\s+/);
-        if (parts.length === 3) {
-          dfa.addTransition(parts[0], parts[1], parts[2]);
-        }
-      }
-
-      document.getElementById('statesCountInfo').textContent = `${dfa.states.size} estados, ${dfa.alphabet.size} símbolos`;
-      updateTransitionMatrix();
-      drawGraph();
-    }
-
-    function autoLayoutNodes() {
-      const states = Array.from(dfa.states);
-      const total = states.length;
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-
-      panX = width / 2;
-      panY = height / 2;
-      zoom = 1.0;
-
-      const radius = Math.min(width, height) * 0.28;
-      states.forEach((state, idx) => {
-        const angle = (idx / total) * 2 * Math.PI - Math.PI / 2;
-        nodePositions[state] = {
-          x: Math.cos(angle) * radius,
-          y: Math.sin(angle) * radius
-        };
-      });
-      drawGraph();
-    }
-
-    function updateTransitionMatrix() {
-      const states = Array.from(dfa.states);
-      const symbols = Array.from(dfa.alphabet);
-      const table = document.getElementById('matrixTable');
-
-      let html = `<thead class="bg-surface-800 text-slate-400"><tr><th class="p-2 border-b border-slate-700">&delta;</th>`;
-      symbols.forEach(sym => {
-        html += `<th class="p-2 border-b border-slate-700 text-center font-bold text-violet-400">${sym}</th>`;
-      });
-      html += `</tr></thead><tbody>`;
-
-      states.forEach(st => {
-        const isInit = st === dfa.initialState ? '-> ' : '';
-        const isFinal = dfa.finalStates.has(st) ? ' *' : '';
-        html += `<tr class="border-b border-slate-800/60 hover:bg-surface-850"><td class="p-2 font-semibold text-slate-300">${isInit}${st}${isFinal}</td>`;
-        symbols.forEach(sym => {
-          const dest = dfa.getNextState(st, sym) || '<span class="text-slate-600">-</span>';
-          html += `<td class="p-2 text-center text-slate-200">${dest}</td>`;
+      if (!appState.alphabet.has(char)) {
+        trace.push({
+          step: i + 1,
+          state: curr,
+          symbolRead: char,
+          remaining,
+          status: 'REJECTED_ALPHABET',
+          explanation: `Símbolo '${char}' não pertence ao alfabeto Σ`
         });
-        html += `</tr>`;
-      });
-      html += `</tbody>`;
-      table.innerHTML = html;
-    }
-
-    // --- CANVAS GRAPH RENDERING ---
-    function drawGraph() {
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      ctx.clearRect(0, 0, w, h);
-
-      ctx.save();
-      ctx.translate(panX, panY);
-      ctx.scale(zoom, zoom);
-
-      // Active state from simulation
-      const currentActiveState = (currentTrace.length > 0 && currentStepIndex < currentTrace.length)
-        ? currentTrace[currentStepIndex].state
-        : null;
-
-      // Group transitions between same pair to combine symbols (e.g. 0, 1)
-      const edgeMap = new Map();
-      dfa.transitions.forEach((dest, key) => {
-        const [orig, sym] = key.split(':');
-        const edgeKey = `${orig}->${dest}`;
-        if (!edgeMap.has(edgeKey)) {
-          edgeMap.set(edgeKey, { orig, dest, symbols: [] });
-        }
-        edgeMap.get(edgeKey).symbols.push(sym);
-      });
-
-      // 1. Draw Transitions (Edges)
-      edgeMap.forEach(edge => {
-        drawEdge(edge.orig, edge.dest, edge.symbols.join(', '));
-      });
-
-      // 2. Draw Initial State Arrow
-      if (dfa.initialState && nodePositions[dfa.initialState]) {
-        drawInitialIndicator(nodePositions[dfa.initialState]);
+        return { accepted: false, trace, reason: `Símbolo '${char}' fora do alfabeto` };
       }
 
-      // 3. Draw States (Nodes)
-      dfa.states.forEach(state => {
-        const pos = nodePositions[state] || { x: 0, y: 0 };
-        const isInitial = state === dfa.initialState;
-        const isFinal = dfa.finalStates.has(state);
-        const isActive = state === currentActiveState;
-        drawNode(state, pos.x, pos.y, isInitial, isFinal, isActive);
-      });
-
-      ctx.restore();
-    }
-
-    function drawNode(name, x, y, isInitial, isFinal, isActive) {
-      const radius = 28;
-
-      // Active Pulsing Outer Glow
-      if (isActive) {
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 12, 0, 2 * Math.PI);
-        ctx.fillStyle = 'rgba(139, 92, 246, 0.25)';
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 6, 0, 2 * Math.PI);
-        ctx.fillStyle = 'rgba(139, 92, 246, 0.45)';
-        ctx.fill();
+      const next = appState.transitions.get(`${curr}:${char}`);
+      if (!next) {
+        trace.push({
+          step: i + 1,
+          state: curr,
+          symbolRead: char,
+          remaining,
+          status: 'REJECTED_TRAP',
+          explanation: `δ(${curr}, '${char}') indefinido (parou em poço)`
+        });
+        return { accepted: false, trace, reason: `Sem transição para '${char}' em ${curr}` };
       }
 
-      // Main Node Body
+      curr = next;
+      trace.push({
+        step: i + 1,
+        state: curr,
+        symbolRead: char,
+        remaining,
+        status: 'RUNNING',
+        explanation: `δ(${trace[trace.length - 1].state}, '${char}') &rarr; ${curr}`
+      });
+    }
+
+    const isAccepted = appState.finalStates.has(curr);
+    trace[trace.length - 1].status = isAccepted ? 'ACCEPTED' : 'REJECTED';
+    trace[trace.length - 1].explanation = isAccepted
+      ? `Aceita: terminou no estado de aceitação ${curr}`
+      : `Rejeitada: parou no estado ${curr} (não pertence a F)`;
+
+    return {
+      accepted: isAccepted,
+      trace,
+      finalState: curr,
+      reason: isAccepted ? `Parou em ${curr} &isin; F` : `Parou em ${curr} &notin; F`
+    };
+  }
+
+  // --- AUTO LAYOUT ALGORITHM ---
+  function computeAutoLayout() {
+    const container = document.getElementById('canvasContainer');
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+
+    appState.canvas.panX = w / 2;
+    appState.canvas.panY = h / 2;
+    appState.canvas.zoom = 1.0;
+    document.getElementById('zoomLevelDisplay').textContent = '100%';
+
+    const statesArr = Array.from(appState.states);
+    const total = statesArr.length;
+    const radius = Math.min(w, h) * 0.28;
+
+    statesArr.forEach((state, i) => {
+      const angle = (i / total) * 2 * Math.PI - Math.PI / 2;
+      appState.nodePositions[state] = {
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius
+      };
+    });
+
+    draw();
+  }
+
+  // --- CANVAS DRAWING (CLEAN SWISS / PRECISION STYLE) ---
+  function draw() {
+    const container = document.getElementById('canvasContainer');
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.translate(appState.canvas.panX, appState.canvas.panY);
+    ctx.scale(appState.canvas.zoom, appState.canvas.zoom);
+
+    // Active state from simulation
+    const currentActive = (appState.simulation.trace.length > 0 && appState.simulation.currentIndex < appState.simulation.trace.length)
+      ? appState.simulation.trace[appState.simulation.currentIndex].state
+      : null;
+
+    // Group transitions to avoid parallel lines
+    const edgeGroups = new Map();
+    appState.transitions.forEach((dest, key) => {
+      const [orig, sym] = key.split(':');
+      const edgeKey = `${orig}->${dest}`;
+      if (!edgeGroups.has(edgeKey)) {
+        edgeGroups.set(edgeKey, { orig, dest, symbols: [] });
+      }
+      edgeGroups.get(edgeKey).symbols.push(sym);
+    });
+
+    // 1. Draw Edges
+    edgeGroups.forEach(edge => {
+      drawEdge(ctx, edge.orig, edge.dest, edge.symbols.join(', '));
+    });
+
+    // 2. Draw Start Indicator
+    if (appState.initialState && appState.nodePositions[appState.initialState]) {
+      drawStartArrow(ctx, appState.nodePositions[appState.initialState]);
+    }
+
+    // 3. Draw Nodes
+    appState.states.forEach(state => {
+      const pos = appState.nodePositions[state] || { x: 0, y: 0 };
+      const isInit = state === appState.initialState;
+      const isFin = appState.finalStates.has(state);
+      const isActive = state === currentActive;
+      drawNode(ctx, state, pos.x, pos.y, isInit, isFin, isActive);
+    });
+
+    ctx.restore();
+  }
+
+  function drawNode(ctx, name, x, y, isInit, isFin, isActive) {
+    const radius = 26;
+
+    // Active Ring Outline (Cobalt Blue)
+    if (isActive) {
       ctx.beginPath();
-      ctx.arc(x, y, radius, 0, 2 * Math.PI);
-      
-      if (isActive) {
-        const grad = ctx.createRadialGradient(x - 5, y - 5, 5, x, y, radius);
-        grad.addColorStop(0, '#8b5cf6');
-        grad.addColorStop(1, '#6d28d9');
-        ctx.fillStyle = grad;
-      } else {
-        const grad = ctx.createRadialGradient(x - 8, y - 8, 4, x, y, radius);
-        grad.addColorStop(0, '#1e293b');
-        grad.addColorStop(1, '#0f172a');
-        ctx.fillStyle = grad;
-      }
-      ctx.fill();
-
-      // Border Stroke
-      ctx.lineWidth = isActive ? 3 : 2;
-      ctx.strokeStyle = isActive ? '#c4b5fd' : '#475569';
-      ctx.stroke();
-
-      // Double ring for Final / Acceptance States
-      if (isFinal) {
-        ctx.beginPath();
-        ctx.arc(x, y, radius - 5, 0, 2 * Math.PI);
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = isActive ? '#ffffff' : '#94a3b8';
-        ctx.stroke();
-      }
-
-      // State Label
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '600 13px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(name, x, y);
-    }
-
-    function drawInitialIndicator(pos) {
-      const radius = 28;
-      const arrowStartX = pos.x - radius - 35;
-      const arrowStartY = pos.y;
-      const arrowEndX = pos.x - radius - 3;
-      const arrowEndY = pos.y;
-
-      ctx.beginPath();
-      ctx.moveTo(arrowStartX, arrowStartY);
-      ctx.lineTo(arrowEndX, arrowEndY);
-      ctx.strokeStyle = '#a78bfa';
+      ctx.arc(x, y, radius + 7, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // Arrowhead
-      drawArrowHead(arrowEndX, arrowEndY, 0, '#a78bfa');
-
-      // "start" text
-      ctx.fillStyle = '#c4b5fd';
-      ctx.font = '600 10px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('START', arrowStartX - 15, arrowStartY + 1);
+      ctx.beginPath();
+      ctx.arc(x, y, radius + 3, 0, 2 * Math.PI);
+      ctx.fillStyle = 'rgba(59, 130, 246, 0.15)';
+      ctx.fill();
     }
 
-    function drawEdge(fromState, toState, label) {
-      const p1 = nodePositions[fromState];
-      const p2 = nodePositions[toState];
-      if (!p1 || !p2) return;
+    // Node Body
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = isActive ? '#1e293b' : '#15181e';
+    ctx.fill();
+    ctx.strokeStyle = isActive ? '#60a5fa' : '#333b47';
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-      const nodeRadius = 28;
+    // Double ring for Final State
+    if (isFin) {
+      ctx.beginPath();
+      ctx.arc(x, y, radius - 4.5, 0, 2 * Math.PI);
+      ctx.strokeStyle = isActive ? '#93c5fd' : '#10b981';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
 
-      // Self Loop
-      if (fromState === toState) {
-        const loopRadius = 22;
-        const cx = p1.x;
-        const cy = p1.y - nodeRadius - loopRadius + 6;
+    // Node Label
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '600 12px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(name, x, y);
+  }
 
-        ctx.beginPath();
-        ctx.arc(cx, cy, loopRadius, Math.PI * 0.25, Math.PI * 0.85, true);
-        ctx.strokeStyle = '#64748b';
-        ctx.lineWidth = 1.8;
-        ctx.stroke();
+  function drawStartArrow(ctx, pos) {
+    const r = 26;
+    const x1 = pos.x - r - 32;
+    const y1 = pos.y;
+    const x2 = pos.x - r - 2;
+    const y2 = pos.y;
 
-        // Arrowhead on loop
-        const arrowAngle = Math.PI * 0.85 - Math.PI / 2;
-        const ax = cx + loopRadius * Math.cos(Math.PI * 0.85);
-        const ay = cy + loopRadius * Math.sin(Math.PI * 0.85);
-        drawArrowHead(ax, ay, arrowAngle, '#64748b');
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-        // Label
-        ctx.fillStyle = '#cbd5e1';
-        ctx.font = '500 11px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(label, cx, cy - loopRadius - 5);
-        return;
-      }
+    // Head
+    drawHead(ctx, x2, y2, 0, '#3b82f6');
 
-      // Directed transition between distinct states
-      const dx = p2.x - p1.x;
-      const dy = p2.y - p1.y;
-      const dist = Math.hypot(dx, dy);
-      const angle = Math.atan2(dy, dx);
+    ctx.fillStyle = '#93c5fd';
+    ctx.font = '700 9px "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('INÍCIO', x1 - 14, y1 + 1);
+  }
 
-      // Curved control point to avoid overlap with reverse transitions
-      const curvature = 26;
-      const midX = (p1.x + p2.x) / 2 - Math.sin(angle) * curvature;
-      const midY = (p1.y + p2.y) / 2 + Math.cos(angle) * curvature;
+  function drawEdge(ctx, from, to, label) {
+    const p1 = appState.nodePositions[from];
+    const p2 = appState.nodePositions[to];
+    if (!p1 || !p2) return;
 
-      // Connect from node boundary to node boundary
-      const startX = p1.x + Math.cos(angle - 0.25) * nodeRadius;
-      const startY = p1.y + Math.sin(angle - 0.25) * nodeRadius;
-      const endX = p2.x - Math.cos(angle + 0.25) * nodeRadius;
-      const endY = p2.y - Math.sin(angle + 0.25) * nodeRadius;
+    const r = 26;
+
+    // Self Transition (Loop)
+    if (from === to) {
+      const loopR = 20;
+      const cx = p1.x;
+      const cy = p1.y - r - loopR + 5;
 
       ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.quadraticCurveTo(midX, midY, endX, endY);
-      ctx.strokeStyle = '#64748b';
+      ctx.arc(cx, cy, loopR, Math.PI * 0.25, Math.PI * 0.85, true);
+      ctx.strokeStyle = '#4b5563';
       ctx.lineWidth = 1.8;
       ctx.stroke();
 
-      // Arrowhead
-      const targetAngle = Math.atan2(endY - midY, endX - midX);
-      drawArrowHead(endX, endY, targetAngle, '#64748b');
+      const ax = cx + loopR * Math.cos(Math.PI * 0.85);
+      const ay = cy + loopR * Math.sin(Math.PI * 0.85);
+      drawHead(ctx, ax, ay, Math.PI * 0.85 - Math.PI / 2, '#4b5563');
 
-      // Label with subtle badge
-      ctx.save();
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '600 11px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      
-      const labelX = (startX + 2 * midX + endX) / 4;
-      const labelY = (startY + 2 * midY + endY) / 4;
+      // Badge
+      drawEdgeBadge(ctx, cx, cy - loopR - 4, label);
+      return;
+    }
 
-      ctx.beginPath();
-      if (ctx.roundRect) {
-        ctx.roundRect(labelX - 10, labelY - 8, 20, 16, 4);
-      } else {
-        ctx.rect(labelX - 10, labelY - 8, 20, 16);
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const angle = Math.atan2(dy, dx);
+
+    // Curved control point
+    const curvature = 24;
+    const midX = (p1.x + p2.x) / 2 - Math.sin(angle) * curvature;
+    const midY = (p1.y + p2.y) / 2 + Math.cos(angle) * curvature;
+
+    const sx = p1.x + Math.cos(angle - 0.22) * r;
+    const sy = p1.y + Math.sin(angle - 0.22) * r;
+    const ex = p2.x - Math.cos(angle + 0.22) * r;
+    const ey = p2.y - Math.sin(angle + 0.22) * r;
+
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.quadraticCurveTo(midX, midY, ex, ey);
+    ctx.strokeStyle = '#4b5563';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    const targetAngle = Math.atan2(ey - midY, ex - midX);
+    drawHead(ctx, ex, ey, targetAngle, '#4b5563');
+
+    // Edge Label Badge
+    const lx = (sx + 2 * midX + ex) / 4;
+    const ly = (sy + 2 * midY + ey) / 4;
+    drawEdgeBadge(ctx, lx, ly, label);
+  }
+
+  function drawEdgeBadge(ctx, x, y, label) {
+    ctx.save();
+    ctx.font = '600 11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const metrics = ctx.measureText(label);
+    const padding = 5;
+    const bw = Math.max(18, metrics.width + padding * 2);
+    const bh = 15;
+
+    ctx.fillStyle = '#111317';
+    ctx.fillRect(x - bw / 2, y - bh / 2, bw, bh);
+    ctx.strokeStyle = '#282e3a';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - bw / 2, y - bh / 2, bw, bh);
+
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillText(label, x, y + 1);
+    ctx.restore();
+  }
+
+  function drawHead(ctx, x, y, angle, color) {
+    const len = 8;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-len, -len / 2.3);
+    ctx.lineTo(-len, len / 2.3);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // --- UI UPDATE & TUPLE DISPLAY ---
+  function updateUI() {
+    // 1. Update 5-Tuple details
+    const alphabetStr = Array.from(appState.alphabet).join(', ');
+    const statesStr = Array.from(appState.states).join(', ');
+    const finalsStr = Array.from(appState.finalStates).join(', ') || '&empty;';
+    const initialStr = appState.initialState || '&empty;';
+
+    document.getElementById('tupleDetail').innerHTML = `
+      <div>Q = { ${statesStr} }</div>
+      <div>&Sigma; = { ${alphabetStr} }</div>
+      <div>q&#8320; = ${initialStr}</div>
+      <div>F = { ${finalsStr} }</div>
+    `;
+
+    // 2. Check Completeness
+    let isComplete = true;
+    for (const st of appState.states) {
+      for (const sym of appState.alphabet) {
+        if (!appState.transitions.has(`${st}:${sym}`)) {
+          isComplete = false;
+          break;
+        }
       }
-      ctx.fillStyle = '#0f172a';
-      ctx.fill();
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      ctx.fillStyle = '#e2e8f0';
-      ctx.fillText(label, labelX, labelY);
-      ctx.restore();
+      if (!isComplete) break;
     }
 
-    function drawArrowHead(x, y, angle, color) {
-      const headlen = 9;
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(-headlen, -headlen / 2.2);
-      ctx.lineTo(-headlen, headlen / 2.2);
-      ctx.closePath();
-      ctx.fillStyle = color;
-      ctx.fill();
-      ctx.restore();
+    const badge = document.getElementById('completenessBadge');
+    if (isComplete) {
+      badge.className = 'text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+      badge.textContent = 'DFA COMPLETO';
+    } else {
+      badge.className = 'text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20';
+      badge.textContent = 'DFA PARCIAL (COM POÇOS)';
     }
 
-    // --- CANVAS USER INTERACTIONS (PAN & ZOOM & DRAG NODES) ---
-    function setupCanvasInteractions() {
-      container.addEventListener('mousedown', (e) => {
-        const rect = container.getBoundingClientRect();
-        const mx = (e.clientX - rect.left - panX) / zoom;
-        const my = (e.clientY - rect.top - panY) / zoom;
+    // 3. Render State Badges in Sidebar
+    const statesContainer = document.getElementById('statesListContainer');
+    statesContainer.innerHTML = '';
+    appState.states.forEach(st => {
+      const isInit = st === appState.initialState;
+      const isFin = appState.finalStates.has(st);
 
-        // Check if clicked on a node
-        for (const st of dfa.states) {
-          const pos = nodePositions[st];
-          if (pos && Math.hypot(mx - pos.x, my - pos.y) <= 30) {
-            draggedNode = st;
-            return;
+      const pill = document.createElement('div');
+      pill.className = `flex items-center gap-1.5 px-2 py-1 rounded text-xs font-mono font-medium border cursor-pointer transition select-none ${
+        isInit ? 'bg-blue-500/15 border-blue-500/40 text-blue-300' : 'bg-app-bg border-app-border text-app-text hover:border-slate-500'
+      }`;
+
+      pill.innerHTML = `
+        <span>${isInit ? '&rarr; ' : ''}${st}${isFin ? '*' : ''}</span>
+        <button class="btnDeleteState text-app-muted hover:text-rose-400 text-xs ml-0.5" title="Remover estado">&times;</button>
+      `;
+
+      // Toggle state initial/final on click
+      pill.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btnDeleteState')) return;
+        toggleStateProps(st);
+      });
+
+      // Delete button
+      pill.querySelector('.btnDeleteState').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteState(st);
+      });
+
+      statesContainer.appendChild(pill);
+    });
+
+    // 4. Update Transition Matrix
+    renderTransitionMatrix();
+
+    // 5. Update bottom status
+    document.getElementById('statsLabel').textContent = `${appState.states.size} estados, ${appState.alphabet.size} símbolos, ${appState.transitions.size} transições`;
+  }
+
+  function toggleStateProps(st) {
+    if (appState.initialState !== st) {
+      appState.initialState = st;
+    } else if (!appState.finalStates.has(st)) {
+      appState.finalStates.add(st);
+    } else {
+      appState.finalStates.delete(st);
+    }
+    updateUI();
+    draw();
+  }
+
+  function deleteState(st) {
+    appState.states.delete(st);
+    if (appState.initialState === st) {
+      appState.initialState = Array.from(appState.states)[0] || null;
+    }
+    appState.finalStates.delete(st);
+    delete appState.nodePositions[st];
+
+    // Remove transitions involving st
+    const keysToDelete = [];
+    appState.transitions.forEach((dest, key) => {
+      const [orig, sym] = key.split(':');
+      if (orig === st || dest === st) keysToDelete.push(key);
+    });
+    keysToDelete.forEach(k => appState.transitions.delete(k));
+
+    // Sync textarea
+    syncTransitionsToTextarea();
+    updateUI();
+    draw();
+  }
+
+  function syncTransitionsToTextarea() {
+    const lines = [];
+    appState.transitions.forEach((dest, key) => {
+      const [orig, sym] = key.split(':');
+      lines.push(`${orig} ${sym} ${dest}`);
+    });
+    document.getElementById('editTransitions').value = lines.join('\n');
+  }
+
+  function renderTransitionMatrix() {
+    const table = document.getElementById('matrixTable');
+    const symbols = Array.from(appState.alphabet);
+    const states = Array.from(appState.states);
+
+    let html = `<thead class="bg-app-bg text-app-muted"><tr><th class="p-2 border-b border-app-border">&delta;</th>`;
+    symbols.forEach(sym => {
+      html += `<th class="p-2 border-b border-app-border text-center font-bold text-blue-400">${sym}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    states.forEach(st => {
+      const isInit = st === appState.initialState ? '&rarr; ' : '';
+      const isFin = appState.finalStates.has(st) ? ' *' : '';
+      html += `<tr class="border-b border-app-border/40 hover:bg-app-hover/50"><td class="p-2 font-medium text-app-text">${isInit}${st}${isFin}</td>`;
+      symbols.forEach(sym => {
+        const dest = appState.transitions.get(`${st}:${sym}`);
+        html += `<td class="p-2 text-center text-app-text">${dest || '<span class="text-app-muted">&empty;</span>'}</td>`;
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody>`;
+    table.innerHTML = html;
+  }
+
+  // --- STEP-BY-STEP SIMULATION & TAPE RUNNER ---
+  function prepareSimulationTape() {
+    stopPlayback();
+    const str = document.getElementById('inputString').value.trim();
+    const res = simulateString(str);
+    appState.simulation.trace = res.trace;
+    appState.simulation.currentIndex = 0;
+    appState.simulation.currentString = str;
+
+    renderTapeCells(str);
+    updateSimulationVisuals();
+    draw();
+  }
+
+  function renderTapeCells(str) {
+    const container = document.getElementById('tapeContainer');
+    container.innerHTML = '';
+
+    if (str.length === 0) {
+      container.innerHTML = `<div class="px-2.5 py-1 rounded border border-app-border bg-app-surface text-[11px] font-mono text-app-muted">&epsilon; (cadeia vazia)</div>`;
+      return;
+    }
+
+    for (let i = 0; i < str.length; i++) {
+      const cell = document.createElement('div');
+      cell.id = `tape-${i}`;
+      cell.className = `w-8 h-8 rounded border text-xs font-mono font-bold flex items-center justify-center tape-cell-transition ${
+        i === 0 ? 'bg-blue-500/20 border-blue-500 text-blue-300 scale-105' : 'bg-app-surface border-app-border text-app-muted'
+      }`;
+      cell.textContent = str[i];
+      container.appendChild(cell);
+    }
+  }
+
+  function updateSimulationVisuals() {
+    const trace = appState.simulation.trace;
+    if (trace.length === 0) return;
+
+    const idx = appState.simulation.currentIndex;
+    const step = trace[idx];
+    const total = trace.length - 1;
+
+    // Text status
+    document.getElementById('stepCounter').innerHTML = `Passo: <span class="text-white font-semibold">${idx} / ${total}</span>`;
+    document.getElementById('activeStateDisplay').innerHTML = `Nó Ativo: <span class="text-blue-400 font-semibold">${step.state || '-'}</span>`;
+    document.getElementById('stepExplanation').textContent = step.explanation;
+
+    // Tape highlight
+    const str = appState.simulation.currentString;
+    for (let i = 0; i < str.length; i++) {
+      const cell = document.getElementById(`tape-${i}`);
+      if (!cell) continue;
+
+      if (i < idx) {
+        cell.className = 'w-8 h-8 rounded border text-xs font-mono font-bold flex items-center justify-center tape-cell-transition bg-app-bg border-app-border text-app-muted/40 line-through';
+      } else if (i === idx && idx < total) {
+        cell.className = 'w-8 h-8 rounded border text-xs font-mono font-bold flex items-center justify-center tape-cell-transition bg-blue-500/25 border-blue-400 text-white scale-110 shadow-sm';
+      } else {
+        cell.className = 'w-8 h-8 rounded border text-xs font-mono font-bold flex items-center justify-center tape-cell-transition bg-app-surface border-app-border text-app-text';
+      }
+    }
+
+    // Verdict badge
+    const badge = document.getElementById('verdictBadge');
+    if (idx === total) {
+      if (step.status === 'ACCEPTED') {
+        badge.className = 'flex items-center gap-2 px-3 py-1.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-xs font-mono font-semibold text-emerald-400 shadow-sm';
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>CADEIA ACEITA</span>`;
+      } else {
+        badge.className = 'flex items-center gap-2 px-3 py-1.5 rounded border border-rose-500/40 bg-rose-500/10 text-xs font-mono font-semibold text-rose-400 shadow-sm';
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400"></span><span>CADEIA REJEITADA</span>`;
+      }
+    } else {
+      badge.className = 'flex items-center gap-2 px-3 py-1.5 rounded border border-blue-500/30 bg-app-surface text-xs font-mono font-semibold text-blue-300';
+      badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span><span>Executando...</span>`;
+    }
+  }
+
+  function stepNext() {
+    if (appState.simulation.currentIndex < appState.simulation.trace.length - 1) {
+      appState.simulation.currentIndex++;
+      updateSimulationVisuals();
+      draw();
+    } else {
+      stopPlayback();
+    }
+  }
+
+  function stepPrev() {
+    if (appState.simulation.currentIndex > 0) {
+      appState.simulation.currentIndex--;
+      updateSimulationVisuals();
+      draw();
+    }
+  }
+
+  function resetSimulation() {
+    stopPlayback();
+    appState.simulation.currentIndex = 0;
+    updateSimulationVisuals();
+    draw();
+  }
+
+  function togglePlayback() {
+    if (appState.simulation.isPlaying) {
+      stopPlayback();
+    } else {
+      startPlayback();
+    }
+  }
+
+  function startPlayback() {
+    if (appState.simulation.currentIndex >= appState.simulation.trace.length - 1) {
+      appState.simulation.currentIndex = 0;
+    }
+    appState.simulation.isPlaying = true;
+    document.getElementById('playLabel').textContent = 'Pausar';
+    document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>';
+
+    appState.simulation.intervalId = setInterval(() => {
+      if (appState.simulation.currentIndex < appState.simulation.trace.length - 1) {
+        stepNext();
+      } else {
+        stopPlayback();
+      }
+    }, appState.simulation.speedMs);
+  }
+
+  function stopPlayback() {
+    appState.simulation.isPlaying = false;
+    if (appState.simulation.intervalId) {
+      clearInterval(appState.simulation.intervalId);
+      appState.simulation.intervalId = null;
+    }
+    document.getElementById('playLabel').textContent = 'Reproduzir';
+    document.getElementById('playIcon').innerHTML = '<path d="M8 5v14l11-7z"></path>';
+  }
+
+  // --- INTERACTIVE MINIMIZATION (MOORE ALGORITHM IN CLIENT) ---
+  function minimizeCurrentAutomaton() {
+    // 1. Unreachable states removal
+    const reachable = new Set([appState.initialState]);
+    const queue = [appState.initialState];
+    while (queue.length > 0) {
+      const u = queue.shift();
+      for (const sym of appState.alphabet) {
+        const v = appState.transitions.get(`${u}:${sym}`);
+        if (v && !reachable.has(v)) {
+          reachable.add(v);
+          queue.push(v);
+        }
+      }
+    }
+
+    // Filter states
+    const activeStates = Array.from(reachable);
+    const finalStates = activeStates.filter(s => appState.finalStates.has(s));
+    const nonFinalStates = activeStates.filter(s => !appState.finalStates.has(s));
+
+    let partitions = [];
+    if (finalStates.length > 0) partitions.push(new Set(finalStates));
+    if (nonFinalStates.length > 0) partitions.push(new Set(nonFinalStates));
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      const nextPartitions = [];
+
+      for (const group of partitions) {
+        if (group.size <= 1) {
+          nextPartitions.push(group);
+          continue;
+        }
+
+        const splits = new Map();
+        for (const s of group) {
+          let key = '';
+          for (const sym of appState.alphabet) {
+            const dest = appState.transitions.get(`${s}:${sym}`);
+            const groupIndex = partitions.findIndex(p => p.has(dest));
+            key += `${sym}:${groupIndex};`;
+          }
+          if (!splits.has(key)) splits.set(key, new Set());
+          splits.get(key).add(s);
+        }
+
+        if (splits.size > 1) changed = true;
+        splits.forEach(sub => nextPartitions.push(sub));
+      }
+
+      partitions = nextPartitions;
+    }
+
+    // Build minimized automaton
+    const oldStateCount = appState.states.size;
+    const newStates = new Set();
+    const newTransitions = new Map();
+    const newFinals = new Set();
+    let newInit = null;
+
+    const groupNames = new Map();
+    partitions.forEach(group => {
+      const name = Array.from(group).sort().join('_');
+      groupNames.set(group, name);
+      newStates.add(name);
+
+      if (group.has(appState.initialState)) newInit = name;
+      if (Array.from(group).some(s => appState.finalStates.has(s))) newFinals.add(name);
+    });
+
+    partitions.forEach(group => {
+      const fromName = groupNames.get(group);
+      const rep = Array.from(group)[0];
+      for (const sym of appState.alphabet) {
+        const dest = appState.transitions.get(`${rep}:${sym}`);
+        if (dest) {
+          const destGroup = partitions.find(g => g.has(dest));
+          if (destGroup) {
+            newTransitions.set(`${fromName}:${sym}`, groupNames.get(destGroup));
           }
         }
+      }
+    });
 
-        // Otherwise pan the whole canvas
-        isPanning = true;
-        startMouseX = e.clientX - panX;
-        startMouseY = e.clientY - panY;
-      });
+    appState.states = newStates;
+    appState.initialState = newInit;
+    appState.finalStates = newFinals;
+    appState.transitions = newTransitions;
 
-      window.addEventListener('mousemove', (e) => {
-        if (draggedNode) {
-          const rect = container.getBoundingClientRect();
-          nodePositions[draggedNode].x = (e.clientX - rect.left - panX) / zoom;
-          nodePositions[draggedNode].y = (e.clientY - rect.top - panY) / zoom;
-          drawGraph();
+    syncTransitionsToTextarea();
+    computeAutoLayout();
+    updateUI();
+    prepareSimulationTape();
+
+    alert(`Minimização concluída com sucesso!\nEstados reduzidos de ${oldStateCount} para ${newStates.size} estados.`);
+  }
+
+  // --- EVENT BINDING & INTERACTIONS ---
+  function bindEvents() {
+    // Formal Language selector
+    document.getElementById('formalLangSelect').addEventListener('change', (e) => {
+      loadLanguagePreset(e.target.value);
+    });
+
+    // New Automaton button
+    document.getElementById('btnNewAutomaton').addEventListener('click', clearAutomaton);
+
+    // Minimize button
+    document.getElementById('btnMinimize').addEventListener('click', minimizeCurrentAutomaton);
+
+    // Apply changes from sidebar textarea
+    document.getElementById('btnApplyChanges').addEventListener('click', () => {
+      const rawAlpha = document.getElementById('editAlphabet').value.trim();
+      appState.alphabet = new Set(rawAlpha.split(/\s+/).filter(s => s.length > 0));
+      parseTransitionsString(document.getElementById('editTransitions').value);
+      computeAutoLayout();
+      updateUI();
+      prepareSimulationTape();
+    });
+
+    // Toggle matrix accordion
+    document.getElementById('btnToggleMatrix').addEventListener('click', () => {
+      const container = document.getElementById('matrixContainer');
+      const icon = document.getElementById('matrixIcon');
+      const isHidden = container.classList.contains('hidden');
+      if (isHidden) {
+        container.classList.remove('hidden');
+        icon.innerHTML = '&minus;';
+      } else {
+        container.classList.add('hidden');
+        icon.innerHTML = '&plus;';
+      }
+    });
+
+    // Canvas playback controls
+    document.getElementById('btnPlay').addEventListener('click', togglePlayback);
+    document.getElementById('btnStepNext').addEventListener('click', stepNext);
+    document.getElementById('btnStepPrev').addEventListener('click', stepPrev);
+    document.getElementById('btnReset').addEventListener('click', resetSimulation);
+    document.getElementById('btnFastForward').addEventListener('click', () => {
+      stopPlayback();
+      appState.simulation.currentIndex = appState.simulation.trace.length - 1;
+      updateSimulationVisuals();
+      draw();
+    });
+
+    // Load tape from text input
+    document.getElementById('btnLoadTape').addEventListener('click', prepareSimulationTape);
+    document.getElementById('inputString').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') prepareSimulationTape();
+    });
+    document.getElementById('btnClearString').addEventListener('click', () => {
+      document.getElementById('inputString').value = '';
+      prepareSimulationTape();
+    });
+
+    // Speed Slider
+    document.getElementById('speedInput').addEventListener('input', (e) => {
+      const ms = parseInt(e.target.value);
+      appState.simulation.speedMs = ms;
+      document.getElementById('speedValue').textContent = `${(ms / 1000).toFixed(1)}s`;
+      if (appState.simulation.isPlaying) {
+        stopPlayback();
+        startPlayback();
+      }
+    });
+
+    // Zoom and view buttons
+    document.getElementById('btnAutoLayout').addEventListener('click', computeAutoLayout);
+    document.getElementById('btnZoomIn').addEventListener('click', () => {
+      appState.canvas.zoom = Math.min(2.5, appState.canvas.zoom * 1.2);
+      document.getElementById('zoomLevelDisplay').textContent = `${Math.round(appState.canvas.zoom * 100)}%`;
+      draw();
+    });
+    document.getElementById('btnZoomOut').addEventListener('click', () => {
+      appState.canvas.zoom = Math.max(0.4, appState.canvas.zoom * 0.8);
+      document.getElementById('zoomLevelDisplay').textContent = `${Math.round(appState.canvas.zoom * 100)}%`;
+      draw();
+    });
+    document.getElementById('btnResetView').addEventListener('click', computeAutoLayout);
+
+    // Canvas Pan & Drag interactions
+    const container = document.getElementById('canvasContainer');
+    container.addEventListener('mousedown', (e) => {
+      const rect = container.getBoundingClientRect();
+      const mx = (e.clientX - rect.left - appState.canvas.panX) / appState.canvas.zoom;
+      const my = (e.clientY - rect.top - appState.canvas.panY) / appState.canvas.zoom;
+
+      // Check if node clicked
+      for (const st of appState.states) {
+        const pos = appState.nodePositions[st];
+        if (pos && Math.hypot(mx - pos.x, my - pos.y) <= 28) {
+          appState.canvas.draggedNode = st;
           return;
         }
+      }
 
-        if (isPanning) {
-          panX = e.clientX - startMouseX;
-          panY = e.clientY - startMouseY;
-          drawGraph();
-        }
-      });
+      // Else pan canvas
+      appState.canvas.isPanning = true;
+      appState.canvas.startMouseX = e.clientX - appState.canvas.panX;
+      appState.canvas.startMouseY = e.clientY - appState.canvas.panY;
+    });
 
-      window.addEventListener('mouseup', () => {
-        draggedNode = null;
-        isPanning = false;
-      });
-
-      container.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-        zoom = Math.max(0.4, Math.min(2.5, zoom * zoomFactor));
-        document.getElementById('zoomLevel').textContent = `${Math.round(zoom * 100)}%`;
-        drawGraph();
-      });
-
-      document.getElementById('btnZoomIn').onclick = () => {
-        zoom = Math.min(2.5, zoom * 1.2);
-        document.getElementById('zoomLevel').textContent = `${Math.round(zoom * 100)}%`;
-        drawGraph();
-      };
-
-      document.getElementById('btnZoomOut').onclick = () => {
-        zoom = Math.max(0.4, zoom * 0.8);
-        document.getElementById('zoomLevel').textContent = `${Math.round(zoom * 100)}%`;
-        drawGraph();
-      };
-
-      document.getElementById('btnResetView').onclick = () => {
-        autoLayoutNodes();
-      };
-    }
-
-    // --- STEP-BY-STEP SIMULATION ENGINE ---
-    function loadStringAndPrepareTape() {
-      pausePlayback();
-      const inputStr = document.getElementById('inputCadeia').value.trim();
-      const res = dfa.simulate(inputStr);
-      currentTrace = res.trace;
-      currentStepIndex = 0;
-      renderTape(inputStr);
-      updateSimulationUI();
-      drawGraph();
-    }
-
-    function renderTape(inputStr) {
-      const tape = document.getElementById('tapeCells');
-      tape.innerHTML = '';
-
-      if (inputStr.length === 0) {
-        tape.innerHTML = `<div class="px-3 py-1.5 rounded-lg border border-slate-700 bg-surface-800 text-xs font-mono text-slate-400">&epsilon; (cadeia vazia)</div>`;
+    window.addEventListener('mousemove', (e) => {
+      if (appState.canvas.draggedNode) {
+        const rect = container.getBoundingClientRect();
+        appState.nodePositions[appState.canvas.draggedNode].x = (e.clientX - rect.left - appState.canvas.panX) / appState.canvas.zoom;
+        appState.nodePositions[appState.canvas.draggedNode].y = (e.clientY - rect.top - appState.canvas.panY) / appState.canvas.zoom;
+        draw();
         return;
       }
 
-      for (let i = 0; i < inputStr.length; i++) {
-        const char = inputStr[i];
-        const cell = document.createElement('div');
-        cell.id = `tape-cell-${i}`;
-        cell.className = `w-9 h-9 rounded-lg font-mono font-bold text-sm flex items-center justify-center border transition-all duration-200 ${
-          i === 0 ? 'bg-violet-600/20 border-violet-500 text-violet-300 shadow-lg shadow-violet-500/20 scale-105' : 'bg-surface-800 border-slate-700 text-slate-400'
-        }`;
-        cell.textContent = char;
-        tape.appendChild(cell);
+      if (appState.canvas.isPanning) {
+        appState.canvas.panX = e.clientX - appState.canvas.startMouseX;
+        appState.canvas.panY = e.clientY - appState.canvas.startMouseY;
+        draw();
       }
-    }
+    });
 
-    function updateSimulationUI() {
-      if (currentTrace.length === 0) return;
+    window.addEventListener('mouseup', () => {
+      appState.canvas.draggedNode = null;
+      appState.canvas.isPanning = false;
+    });
 
-      const current = currentTrace[currentStepIndex];
-      const totalSteps = currentTrace.length - 1;
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.1 : 0.9;
+      appState.canvas.zoom = Math.max(0.4, Math.min(2.5, appState.canvas.zoom * factor));
+      document.getElementById('zoomLevelDisplay').textContent = `${Math.round(appState.canvas.zoom * 100)}%`;
+      draw();
+    });
 
-      // Update text stats
-      document.getElementById('stepInfoText').innerHTML = `Passo: <span class="text-violet-400 font-bold">${currentStepIndex} / ${totalSteps}</span>`;
-      document.getElementById('activeStateText').innerHTML = `Estado Atual: <span class="text-emerald-400 font-bold">${current.state || '-'}</span>`;
+    // Double click on canvas to add a new state at mouse position
+    container.addEventListener('dblclick', (e) => {
+      const rect = container.getBoundingClientRect();
+      const x = (e.clientX - rect.left - appState.canvas.panX) / appState.canvas.zoom;
+      const y = (e.clientY - rect.top - appState.canvas.panY) / appState.canvas.zoom;
 
-      // Update Tape Head cursor
-      const inputStr = document.getElementById('inputCadeia').value.trim();
-      for (let i = 0; i < inputStr.length; i++) {
-        const cell = document.getElementById(`tape-cell-${i}`);
-        if (!cell) continue;
-
-        if (i < currentStepIndex) {
-          // Already read
-          cell.className = 'w-9 h-9 rounded-lg font-mono font-bold text-sm flex items-center justify-center border bg-surface-850/60 border-slate-800 text-slate-600 line-through';
-        } else if (i === currentStepIndex && currentStepIndex < totalSteps) {
-          // Currently reading
-          cell.className = 'w-9 h-9 rounded-lg font-mono font-bold text-sm flex items-center justify-center border bg-violet-600/30 border-violet-400 text-white shadow-lg shadow-violet-500/30 scale-110 ring-2 ring-violet-500/50';
-        } else {
-          // Pending
-          cell.className = 'w-9 h-9 rounded-lg font-mono font-bold text-sm flex items-center justify-center border bg-surface-800 border-slate-700 text-slate-300';
-        }
+      let nameNum = appState.states.size;
+      let candidate = `q${nameNum}`;
+      while (appState.states.has(candidate)) {
+        nameNum++;
+        candidate = `q${nameNum}`;
       }
 
-      // Update Verdict Badge
-      const badge = document.getElementById('statusBadge');
-      if (currentStepIndex === totalSteps) {
-        const finalStatus = current.status;
-        if (finalStatus === 'ACCEPTED') {
-          badge.className = 'px-4 py-2 rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 border bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-lg shadow-emerald-500/10 animate-pulse';
-          badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> <span>CADEIA ACEITA!</span>`;
-        } else {
-          badge.className = 'px-4 py-2 rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 border bg-rose-500/10 text-rose-400 border-rose-500/40 shadow-lg shadow-rose-500/10';
-          badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span> <span>CADEIA REJEITADA</span>`;
-        }
+      appState.states.add(candidate);
+      appState.nodePositions[candidate] = { x, y };
+      if (!appState.initialState) appState.initialState = candidate;
+      updateUI();
+      draw();
+    });
+
+    // Modals: Add State
+    document.getElementById('btnAddStateModal').addEventListener('click', () => {
+      document.getElementById('newStateName').value = `q${appState.states.size}`;
+      document.getElementById('checkIsInitial').checked = false;
+      document.getElementById('checkIsFinal').checked = false;
+      document.getElementById('stateModal').classList.remove('hidden');
+    });
+    document.getElementById('btnCloseStateModal').addEventListener('click', () => {
+      document.getElementById('stateModal').classList.add('hidden');
+    });
+    document.getElementById('btnCancelStateModal').addEventListener('click', () => {
+      document.getElementById('stateModal').classList.add('hidden');
+    });
+    document.getElementById('btnSaveNewState').addEventListener('click', () => {
+      const name = document.getElementById('newStateName').value.trim();
+      if (!name) return;
+      appState.states.add(name);
+      if (document.getElementById('checkIsInitial').checked) appState.initialState = name;
+      if (document.getElementById('checkIsFinal').checked) appState.finalStates.add(name);
+      if (!appState.nodePositions[name]) {
+        appState.nodePositions[name] = { x: (Math.random() - 0.5) * 150, y: (Math.random() - 0.5) * 150 };
+      }
+      document.getElementById('stateModal').classList.add('hidden');
+      updateUI();
+      draw();
+    });
+
+    // Modals: Batch Testing
+    document.getElementById('btnBatchModal').addEventListener('click', () => {
+      document.getElementById('batchModal').classList.remove('hidden');
+    });
+    document.getElementById('btnCloseBatchModal').addEventListener('click', () => {
+      document.getElementById('batchModal').classList.add('hidden');
+    });
+    document.getElementById('btnExecuteBatch').addEventListener('click', runBatchTests);
+
+    // File I/O
+    document.getElementById('fileTxtInput').addEventListener('change', handleFileImport);
+    document.getElementById('btnExportTxt').addEventListener('click', exportToTxt);
+    document.getElementById('btnExportSvg').addEventListener('click', exportToSvg);
+  }
+
+  function runBatchTests() {
+    const text = document.getElementById('batchStringsInput').value;
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const tbody = document.getElementById('batchTableBody');
+    tbody.innerHTML = '';
+
+    lines.forEach((word, idx) => {
+      const res = simulateString(word);
+      const path = res.trace.map(t => t.state).join(' &rarr; ');
+      const badge = res.accepted
+        ? '<span class="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">ACEITA</span>'
+        : '<span class="text-rose-400 font-bold bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded">REJEITADA</span>';
+
+      const row = document.createElement('tr');
+      row.className = 'hover:bg-app-hover/50';
+      row.innerHTML = `
+        <td class="px-3 py-2 text-app-muted">${idx + 1}</td>
+        <td class="px-3 py-2 font-bold text-white">${word}</td>
+        <td class="px-3 py-2">${badge}</td>
+        <td class="px-3 py-2 text-app-muted text-[11px]">${path}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function handleFileImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const lines = event.target.result.split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 0 && !l.startsWith('#') && !l.startsWith('//'));
+
+      if (lines.length >= 4) {
+        appState.alphabet = new Set(lines[0].split(/\s+/));
+        appState.states = new Set(lines[1].split(/\s+/));
+        appState.initialState = lines[2].trim();
+        appState.finalStates = new Set(lines[3].split(/\s+/));
+
+        const transText = lines.slice(4).join('\n');
+        parseTransitionsString(transText);
+
+        document.getElementById('editAlphabet').value = lines[0];
+        document.getElementById('editTransitions').value = transText;
+
+        computeAutoLayout();
+        updateUI();
+        prepareSimulationTape();
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function exportToTxt() {
+    let content = "";
+    content += Array.from(appState.alphabet).join(' ') + "\n";
+    content += Array.from(appState.states).join(' ') + "\n";
+    content += (appState.initialState || "") + "\n";
+    content += Array.from(appState.finalStates).join(' ') + "\n";
+
+    appState.transitions.forEach((dest, key) => {
+      const [orig, sym] = key.split(':');
+      content += `${orig} ${sym} ${dest}\n`;
+    });
+
+    downloadFile(content, 'automato.txt', 'text/plain');
+  }
+
+  function exportToSvg() {
+    const container = document.getElementById('canvasContainer');
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    const px = appState.canvas.panX;
+    const py = appState.canvas.panY;
+
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">\n`;
+    svg += `<rect width="100%" height="100%" fill="#0f1115"/>\n`;
+
+    // Marker
+    svg += `<defs>\n`;
+    svg += `  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">\n`;
+    svg += `    <path d="M 0 0 L 10 5 L 0 10 z" fill="#4b5563"/>\n`;
+    svg += `  </marker>\n`;
+    svg += `</defs>\n`;
+
+    // Edges
+    svg += `<g stroke="#4b5563" stroke-width="2">\n`;
+    appState.transitions.forEach((dest, key) => {
+      const [orig, sym] = key.split(':');
+      const p1 = appState.nodePositions[orig];
+      const p2 = appState.nodePositions[dest];
+      if (!p1 || !p2) return;
+      const x1 = p1.x + px;
+      const y1 = p1.y + py;
+      const x2 = p2.x + px;
+      const y2 = p2.y + py;
+      if (orig === dest) {
+        svg += `  <path d="M ${x1} ${y1-26} C ${x1-25} ${y1-60}, ${x1+25} ${y1-60}, ${x1+10} ${y1-26}" fill="none" marker-end="url(#arrow)"/>\n`;
+        svg += `  <text x="${x1}" y="${y1-65}" fill="#cbd5e1" font-family="monospace" font-size="11" text-anchor="middle">${sym}</text>\n`;
       } else {
-        badge.className = 'px-4 py-2 rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 border bg-surface-800 text-violet-300 border-violet-500/30';
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-violet-400 animate-pulse"></span> <span>Simulando passo a passo...</span>`;
+        svg += `  <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#arrow)"/>\n`;
+        svg += `  <text x="${(x1+x2)/2}" y="${(y1+y2)/2 - 8}" fill="#cbd5e1" font-family="monospace" font-size="11" text-anchor="middle">${sym}</text>\n`;
       }
-    }
+    });
+    svg += `</g>\n`;
 
-    function stepForward() {
-      if (currentStepIndex < currentTrace.length - 1) {
-        currentStepIndex++;
-        updateSimulationUI();
-        drawGraph();
-      } else {
-        pausePlayback();
+    // Nodes
+    svg += `<g>\n`;
+    appState.states.forEach(st => {
+      const p = appState.nodePositions[st] || { x: 0, y: 0 };
+      const cx = p.x + px;
+      const cy = p.y + py;
+      const isFin = appState.finalStates.has(st);
+      svg += `  <circle cx="${cx}" cy="${cy}" r="26" fill="#15181e" stroke="#333b47" stroke-width="2"/>\n`;
+      if (isFin) {
+        svg += `  <circle cx="${cx}" cy="${cy}" r="21" fill="none" stroke="#10b981" stroke-width="1.5"/>\n`;
       }
-    }
+      svg += `  <text x="${cx}" y="${cy+4}" fill="#ffffff" font-family="monospace" font-size="12" font-weight="600" text-anchor="middle">${st}</text>\n`;
+    });
+    svg += `</g>\n</svg>`;
 
-    function stepBackward() {
-      if (currentStepIndex > 0) {
-        currentStepIndex--;
-        updateSimulationUI();
-        drawGraph();
-      }
-    }
+    downloadFile(svg, 'automato.svg', 'image/svg+xml');
+  }
 
-    function resetSimulation() {
-      pausePlayback();
-      currentStepIndex = 0;
-      updateSimulationUI();
-      drawGraph();
-    }
-
-    function togglePlay() {
-      if (isPlaying) {
-        pausePlayback();
-      } else {
-        startPlayback();
-      }
-    }
-
-    function startPlayback() {
-      if (currentStepIndex >= currentTrace.length - 1) {
-        currentStepIndex = 0;
-      }
-      isPlaying = true;
-      document.getElementById('labelPlay').textContent = 'Pausar (Pause)';
-      document.getElementById('iconPlay').innerHTML = '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>';
-
-      const intervalMs = parseInt(document.getElementById('speedSlider').value);
-      playInterval = setInterval(() => {
-        if (currentStepIndex < currentTrace.length - 1) {
-          stepForward();
-        } else {
-          pausePlayback();
-        }
-      }, intervalMs);
-    }
-
-    function pausePlayback() {
-      isPlaying = false;
-      if (playInterval) clearInterval(playInterval);
-      playInterval = null;
-      document.getElementById('labelPlay').textContent = 'Executar (Play)';
-      document.getElementById('iconPlay').innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>';
-    }
-
-    // --- CONTROLS SETUP ---
-    function setupControls() {
-      document.getElementById('presetSelector').onchange = (e) => loadPreset(e.target.value);
-      document.getElementById('btnAtualizarGrafo').onclick = () => {
-        compileDFA();
-        loadStringAndPrepareTape();
-      };
-
-      document.getElementById('btnLoadString').onclick = () => loadStringAndPrepareTape();
-      document.getElementById('inputCadeia').onkeydown = (e) => {
-        if (e.key === 'Enter') loadStringAndPrepareTape();
-      };
-      document.getElementById('btnClearCadeia').onclick = () => {
-        document.getElementById('inputCadeia').value = '';
-        loadStringAndPrepareTape();
-      };
-
-      document.getElementById('btnStepForward').onclick = stepForward;
-      document.getElementById('btnStepBack').onclick = stepBackward;
-      document.getElementById('btnResetSim').onclick = resetSimulation;
-      document.getElementById('btnPlayPause').onclick = togglePlay;
-      document.getElementById('btnRunInstant').onclick = () => {
-        pausePlayback();
-        currentStepIndex = currentTrace.length - 1;
-        updateSimulationUI();
-        drawGraph();
-      };
-
-      const slider = document.getElementById('speedSlider');
-      slider.oninput = (e) => {
-        const val = e.target.value;
-        document.getElementById('speedLabel').textContent = `${(val / 1000).toFixed(1)}s`;
-        if (isPlaying) {
-          pausePlayback();
-          startPlayback();
-        }
-      };
-
-      // File Uploader
-      document.getElementById('fileUploader').onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const lines = event.target.result.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-          if (lines.length >= 4) {
-            document.getElementById('inputAlfabeto').value = lines[0];
-            document.getElementById('inputEstados').value = lines[1];
-            document.getElementById('inputInicial').value = lines[2];
-            document.getElementById('inputFinais').value = lines[3];
-            document.getElementById('inputTransicoes').value = lines.slice(4).join('\n');
-            compileDFA();
-            autoLayoutNodes();
-            loadStringAndPrepareTape();
-          }
-        };
-        reader.readAsText(file);
-      };
-
-      // Table toggle
-      document.getElementById('btnToggleTable').onclick = () => {
-        const c = document.getElementById('tableContainer');
-        const icon = document.getElementById('tableToggleIcon');
-        if (c.classList.contains('hidden')) {
-          c.classList.remove('hidden');
-          icon.innerHTML = '&minus;';
-        } else {
-          c.classList.add('hidden');
-          icon.innerHTML = '&plus;';
-        }
-      };
-
-      // Batch Modal
-      document.getElementById('btnOpenBatchModal').onclick = () => {
-        document.getElementById('batchModal').classList.remove('hidden');
-      };
-      document.getElementById('btnCloseBatchModal').onclick = () => {
-        document.getElementById('batchModal').classList.add('hidden');
-      };
-      document.getElementById('btnRunBatch').onclick = runBatchTests;
-
-      // Export SVG for Figma
-      document.getElementById('btnExportSVG').onclick = exportSVG;
-    }
-
-    function runBatchTests() {
-      const text = document.getElementById('batchInputStrings').value;
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      const tbody = document.getElementById('batchResultsTable');
-      tbody.innerHTML = '';
-
-      lines.forEach((str, idx) => {
-        const res = dfa.simulate(str);
-        const path = res.trace.map(t => t.state).join(' &rarr; ');
-        const badge = res.accepted
-          ? '<span class="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">ACEITA</span>'
-          : '<span class="text-rose-400 font-bold bg-rose-500/10 border border-rose-500/30 px-2 py-0.5 rounded">REJEITADA</span>';
-
-        const row = document.createElement('tr');
-        row.className = 'hover:bg-surface-850';
-        row.innerHTML = `
-          <td class="px-4 py-2 text-slate-500">${idx + 1}</td>
-          <td class="px-4 py-2 font-bold text-white">${str}</td>
-          <td class="px-4 py-2">${badge}</td>
-          <td class="px-4 py-2 text-xs text-slate-400">${path}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function exportSVG() {
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">\n`;
-      svg += `<rect width="100%" height="100%" fill="#0b0f19"/>\n`;
-      
-      // Defs
-      svg += `<defs>\n`;
-      svg += `  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">\n`;
-      svg += `    <path d="M 0 0 L 10 5 L 0 10 z" fill="#818cf8"/>\n`;
-      svg += `  </marker>\n`;
-      svg += `</defs>\n`;
-
-      // Edges
-      svg += `<g id="transitions" stroke="#64748b" stroke-width="2">\n`;
-      dfa.transitions.forEach((dest, key) => {
-        const [orig, sym] = key.split(':');
-        const p1 = nodePositions[orig];
-        const p2 = nodePositions[dest];
-        if (!p1 || !p2) return;
-        const x1 = p1.x + panX;
-        const y1 = p1.y + panY;
-        const x2 = p2.x + panX;
-        const y2 = p2.y + panY;
-        if (orig === dest) {
-          svg += `  <path d="M ${x1} ${y1-28} C ${x1-25} ${y1-65}, ${x1+25} ${y1-65}, ${x1+10} ${y1-28}" fill="none" marker-end="url(#arrow)"/>\n`;
-          svg += `  <text x="${x1}" y="${y1-70}" fill="#e2e8f0" font-family="sans-serif" font-size="12" text-anchor="middle">${sym}</text>\n`;
-        } else {
-          svg += `  <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#arrow)"/>\n`;
-          svg += `  <text x="${(x1+x2)/2}" y="${(y1+y2)/2 - 8}" fill="#e2e8f0" font-family="sans-serif" font-size="12" text-anchor="middle">${sym}</text>\n`;
-        }
-      });
-      svg += `</g>\n`;
-
-      // Nodes
-      svg += `<g id="states">\n`;
-      dfa.states.forEach(state => {
-        const pos = nodePositions[state] || { x: 0, y: 0 };
-        const cx = pos.x + panX;
-        const cy = pos.y + panY;
-        const isFinal = dfa.finalStates.has(state);
-        svg += `  <circle cx="${cx}" cy="${cy}" r="28" fill="#1e293b" stroke="#7c3aed" stroke-width="2.5"/>\n`;
-        if (isFinal) {
-          svg += `  <circle cx="${cx}" cy="${cy}" r="23" fill="none" stroke="#a78bfa" stroke-width="1.5"/>\n`;
-        }
-        svg += `  <text x="${cx}" y="${cy+4}" fill="#ffffff" font-family="monospace" font-size="13" font-weight="bold" text-anchor="middle">${state}</text>\n`;
-      });
-      svg += `</g>\n</svg>`;
-
-      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'automato-afd.svg';
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    window.onload = init;
-  </script>
+  function downloadFile(content, fileName, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
 </body>
 </html>
