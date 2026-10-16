@@ -63,7 +63,7 @@ public class JanelaPrincipal extends JFrame {
         JPanel painelTransicoes = new JPanel(new BorderLayout());
         painelTransicoes.setBorder(BorderFactory.createTitledBorder("Transições (Formato: Origem Simbolo Destino - uma por linha)"));
         txtTransicoes = new JTextArea("q0 0 q1\nq0 1 q0\nq1 0 q1\nq1 1 q2\nq2 0 q1\nq2 1 q0");
-        painelTransicoes.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        txtTransicoes.setFont(new Font("Monospaced", Font.PLAIN, 13));
         painelTransicoes.add(new JScrollPane(txtTransicoes), BorderLayout.CENTER);
         add(painelTransicoes, BorderLayout.CENTER);
 
@@ -91,6 +91,9 @@ public class JanelaPrincipal extends JFrame {
     }
 
     private void construirAutomatoManualmente() {
+        // Descarta o autômato anterior: se a validação falhar, não pode sobrar um autômato antigo ativo
+        this.automatoAtual = null;
+        this.simulador = null;
         try {
             Automato automato = new Automato();
 
@@ -126,6 +129,7 @@ public class JanelaPrincipal extends JFrame {
             lblResultado.setText("Autômato Construído com Sucesso! Pronto para simular.");
             lblResultado.setForeground(new Color(0, 128, 0));
             JOptionPane.showMessageDialog(this, "Autômato AFD válido construído com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            avisarSeIncompleto(automato);
 
         } catch (AutomatoInvalidoException ex) {
             lblResultado.setText("Erro: Autômato Inválido!");
@@ -134,10 +138,25 @@ public class JanelaPrincipal extends JFrame {
         }
     }
 
+    private void avisarSeIncompleto(Automato automato) {
+        java.util.List<String> faltantes = automato.getTransicoesFaltantes();
+        if (faltantes.isEmpty()) return;
+        lblResultado.setText("Autômato válido, porém INCOMPLETO (faltam " + faltantes.size() + " transição(ões)).");
+        lblResultado.setForeground(new Color(200, 120, 0));
+        JOptionPane.showMessageDialog(this,
+                "O autômato é determinístico, mas não é completo.\n"
+                        + "Transições não definidas: " + String.join(", ", faltantes) + "\n\n"
+                        + "Ao chegar em um desses pontos, a simulação para em um estado poço implícito\n"
+                        + "e a cadeia é REJEITADA.",
+                "Aviso: AFD incompleto", JOptionPane.WARNING_MESSAGE);
+    }
+
     private void carregarDeArquivo() {
         JFileChooser fileChooser = new JFileChooser();
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File arquivo = fileChooser.getSelectedFile();
+            this.automatoAtual = null;
+            this.simulador = null;
             try {
                 Automato automato = GerenciadorIO.montarPorArquivo(arquivo);
                 this.automatoAtual = automato;
@@ -157,6 +176,7 @@ public class JanelaPrincipal extends JFrame {
                 lblResultado.setText("Autômato carregado do arquivo com sucesso! (" + automato.getEstados().size() + " estados)");
                 lblResultado.setForeground(new Color(0, 128, 0));
                 JOptionPane.showMessageDialog(this, "Autômato AFD carregado com sucesso via GerenciadorIO!", "Arquivo Carregado", JOptionPane.INFORMATION_MESSAGE);
+                avisarSeIncompleto(automato);
 
             } catch (Exception ex) {
                 lblResultado.setText("Erro ao carregar arquivo!");
