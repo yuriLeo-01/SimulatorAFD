@@ -44,12 +44,10 @@ public class GerenciadorIO {
 
     private static Automato parseLinhas(BufferedReader reader) throws IOException, AutomatoInvalidoException {
         Automato automato = new Automato();
-        List<String> linhasSignificativas = new ArrayList<>();
+        List<String> linhas = new ArrayList<>();
         String linhaBruta;
-        int numeroLinhaReal = 0;
 
         while ((linhaBruta = reader.readLine()) != null) {
-            numeroLinhaReal++;
             String linha = linhaBruta.trim();
 
             // Ignora linhas vazias e comentários (# ou //)
@@ -65,41 +63,45 @@ public class GerenciadorIO {
             }
 
             if (!linha.isEmpty()) {
-                linhasSignificativas.add(linha);
+                linhas.add(linha);
             }
         }
 
-        if (linhasSignificativas.size() < 4) {
+        if (linhas.size() < 3) {
             throw new AutomatoInvalidoException(
-                    "Arquivo incompleto: deve conter no mínimo 4 seções (Alfabeto, Estados, Estado Inicial e Estados Finais)."
+                    "Arquivo incompleto: deve conter Alfabeto, Estados e Estado Inicial "
+                            + "(seguidos dos Estados de Aceitação, que podem ser omitidos, e das transições)."
             );
         }
 
         // 1. Alfabeto
-        String[] simbolos = linhasSignificativas.get(0).split("\\s+");
-        for (String s : simbolos) {
+        for (String s : linhas.get(0).split("\\s+")) {
             if (!s.isEmpty()) automato.adicionarSimboloAlfabeto(s);
         }
 
         // 2. Estados
-        String[] estados = linhasSignificativas.get(1).split("\\s+");
-        for (String e : estados) {
+        for (String e : linhas.get(1).split("\\s+")) {
             if (!e.isEmpty()) automato.adicionarEstado(e);
         }
 
         // 3. Estado Inicial
-        String estadoInicial = linhasSignificativas.get(2).trim();
-        automato.setEstadoInicial(estadoInicial);
+        automato.setEstadoInicial(linhas.get(2).trim());
 
-        // 4. Estados Finais
-        String[] estadosFinais = linhasSignificativas.get(3).split("\\s+");
-        for (String f : estadosFinais) {
-            if (!f.isEmpty()) automato.adicionarEstadoFinal(f);
+        // 4. Estados de Aceitação.
+        // A linha de aceitação pode estar vazia (F = conjunto vazio). Como linhas em branco são ignoradas,
+        // se a próxima linha já tem a forma "Origem Simbolo Destino" (o símbolo do meio pertence ao
+        // alfabeto), ela é uma transição e F é vazio.
+        int inicioTransicoes = 3;
+        if (linhas.size() > 3 && !pareceTransicao(automato, linhas.get(3))) {
+            for (String f : linhas.get(3).split("\\s+")) {
+                if (!f.isEmpty()) automato.adicionarEstadoFinal(f);
+            }
+            inicioTransicoes = 4;
         }
 
-        // 5. Transições (linhas 4 em diante)
-        for (int i = 4; i < linhasSignificativas.size(); i++) {
-            String linhaTrans = linhasSignificativas.get(i);
+        // 5. Transições
+        for (int i = inicioTransicoes; i < linhas.size(); i++) {
+            String linhaTrans = linhas.get(i);
             String[] partes = linhaTrans.split("\\s+");
             if (partes.length == 3) {
                 automato.adicionarTransicao(partes[0], partes[1], partes[2]);
@@ -112,6 +114,11 @@ public class GerenciadorIO {
         }
 
         return automato;
+    }
+
+    private static boolean pareceTransicao(Automato automato, String linha) {
+        String[] partes = linha.split("\\s+");
+        return partes.length == 3 && automato.getAlfabeto().contains(partes[1]);
     }
 
     /**
