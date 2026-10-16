@@ -215,6 +215,22 @@ public class Automato {
     }
 
     /**
+     * Lista os pares (estado, símbolo) sem transição definida, no formato "δ(q1, 1)".
+     * Lista vazia significa que o AFD é completo.
+     */
+    public List<String> getTransicoesFaltantes() {
+        List<String> faltantes = new ArrayList<>();
+        for (Estado e : this.estados.values()) {
+            for (String s : this.alfabeto) {
+                if (!e.temTransicao(s)) {
+                    faltantes.add("δ(" + e.getNome() + ", " + s + ")");
+                }
+            }
+        }
+        return faltantes;
+    }
+
+    /**
      * Identifica estados inalcançáveis a partir do estado inicial usando busca em largura (BFS).
      */
     public Set<Estado> obterEstadosInalcancaveis() {
@@ -317,7 +333,7 @@ public class Automato {
             String[] partes = entry.getKey().split("->");
             String rotulo = String.join(", ", entry.getValue());
             sb.append("    ").append(partes[0]).append(" -> ").append(partes[1])
-              .append(" [label=\"").append(rotulo).append("\"];\n");
+                    .append(" [label=\"").append(rotulo).append("\"];\n");
         }
 
         sb.append("}\n");
