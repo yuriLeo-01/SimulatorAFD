@@ -5,7 +5,6 @@ Simulador de AFD desenvolvido para o 1º Trabalho da disciplina de **Linguagens 
 **A = (Q, Σ, δ, q0, F)**, rejeita definições inválidas (não determinísticas) e informa se
 cadeias de entrada **pertencem ou não** à linguagem do autômato.
 
-**Autores:** _(preencher com os nomes da equipe)_
 
 ---
 
